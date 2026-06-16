@@ -1,5 +1,40 @@
+// Function to parse JWT token from Google Auth
+function parseJwt (token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
+// Global callback for Google Sign-In
+window.handleCredentialResponse = (response) => {
+    const responsePayload = parseJwt(response.credential);
+    console.log("ID: " + responsePayload.sub);
+    console.log('Full Name: ' + responsePayload.name);
+    console.log("Email: " + responsePayload.email);
+
+    // Update UI
+    document.getElementById('auth-container').style.display = 'none';
+    document.getElementById('user-profile').style.display = 'flex';
+    document.getElementById('user-avatar').src = responsePayload.picture;
+    document.getElementById('user-name').textContent = responsePayload.name;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('BulkThreads application initialized.');
+
+    // Sign out functionality
+    const signOutBtn = document.getElementById('sign-out-btn');
+    if (signOutBtn) {
+        signOutBtn.addEventListener('click', () => {
+            document.getElementById('user-profile').style.display = 'none';
+            document.getElementById('auth-container').style.display = 'block';
+            console.log('User signed out.');
+        });
+    }
     
     // Example data for campaigns
     const campaigns = [
