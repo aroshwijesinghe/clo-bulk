@@ -1,0 +1,69 @@
+# =============================================================================
+# BulkThreads — Project Requirements
+# =============================================================================
+# This is a JavaScript (Node.js) project.
+# The authoritative manifests are:
+#   frontend/package.json  — Next.js app
+#   backend/package.json   — Express API server
+#
+# Runtime requirements:
+#   Node.js  >= 18.x   (LTS recommended)
+#   npm      >= 9.x
+# =============================================================================
+
+
+# ─── FRONTEND (frontend/) ─────────────────────────────────────────────────────
+# Framework & Runtime
+next==16.2.10
+react==19.2.4
+react-dom==19.2.4
+
+# Animations (Apple-like fluid transitions)
+framer-motion>=12.42.2
+
+# Database / Supabase client (public queries)
+@supabase/supabase-js>=2.110.2
+
+# Dev dependencies
+eslint>=9
+eslint-config-next==16.2.10
+
+
+# ─── BACKEND (backend/) ──────────────────────────────────────────────────────
+# HTTP Server
+express>=4.21.2
+
+# Cross-origin requests
+cors>=2.8.5
+
+# Environment variables
+dotenv>=16.4.5
+
+# Database client (Supabase — service role for full access)
+@supabase/supabase-js>=2.110.2
+
+# Dev dependencies
+nodemon>=3.1.9
+
+
+# ─── SYSTEM / PLATFORM ───────────────────────────────────────────────────────
+# Database:  Supabase (PostgreSQL) — cloud hosted, no ORM needed
+# Auth:      Google OAuth placeholder — full implementation in next phase
+# Payments:  Stripe integration planned for next phase
+# NOTE:      Prisma ORM has been removed. All DB calls use @supabase/supabase-js directly.
+
+
+# ─── HOW TO INSTALL ───────────────────────────────────────────────────────────
+# Frontend:
+#   cd frontend && npm install
+#
+# Backend:
+#   cd backend && npm install
+#
+# Run development servers:
+#   Frontend:  cd frontend && npm run dev   (http://localhost:3000)
+#   Backend:   cd backend  && npm run dev   (http://localhost:4000)
+#
+# Seed database with sample campaigns:
+#   cd backend && npm run db:seed
+# =============================================================================
