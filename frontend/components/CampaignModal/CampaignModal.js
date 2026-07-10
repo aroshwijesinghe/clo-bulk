@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -108,10 +108,21 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
         <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
 
         {/* Image */}
-        <div className={styles.imageWrap}>
+        <div className={styles.imageWrap} style={{ position: 'relative', overflow: 'hidden' }}>
           {images.length > 0 ? (
             <>
-              <Image key={currentImageIdx} src={images[currentImageIdx]} alt={campaign.title} fill style={{ objectFit: 'cover' }} />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentImageIdx}
+                  initial={{ opacity: 0, scale: 1.03 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                  style={{ width: '100%', height: '100%', position: 'absolute' }}
+                >
+                  <Image src={images[currentImageIdx]} alt={campaign.title} fill style={{ objectFit: 'cover' }} />
+                </motion.div>
+              </AnimatePresence>
               {images.length > 1 && (
                 <>
                   <button className={`${styles.carouselArrow} ${styles.carouselLeft}`} onClick={prevImage}>←</button>
