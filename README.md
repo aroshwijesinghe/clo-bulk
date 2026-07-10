@@ -2,7 +2,7 @@
 
 > **Group buying for premium clothing. Wholesale prices, together.**
 
-BulkThreads is a modern bulk-order platform where people join campaigns to hit a minimum quantity target — unlocking wholesale pricing for everyone. Built with **Next.js 16**, **Express.js**, and **Supabase** (PostgreSQL + Auth).
+BulkThreads is a modern bulk-order platform where people join campaigns to hit a minimum quantity target — unlocking wholesale pricing for everyone. Built with **Next.js 16**, **FastAPI (Python)**, and **Supabase** (PostgreSQL + Auth).
 
 ---
 
@@ -36,18 +36,14 @@ clo-bulk/
 │   ├── .env.local               ← Frontend env vars (Supabase public keys)
 │   └── package.json
 │
-├── backend/           ← Express.js REST API
-│   ├── src/
-│   │   ├── server.js            ← Express entry point (port 4000)
-│   │   ├── seed.js              ← Database seeder script
-│   │   └── routes/
-│   │       ├── campaigns.js     ← CRUD routes for campaigns
-│   │       └── orders.js        ← Order placement routes
+├── backend/           ← FastAPI REST API
+│   ├── app/
 │   ├── lib/
-│   │   └── supabase.js          ← Server Supabase client (service role)
-│   ├── schema.sql               ← ⚠️ Run this in Supabase SQL Editor first!
-│   ├── .env                     ← Backend env vars (service role key)
-│   └── package.json
+│   ├── main.py              ← FastAPI entry point (port 8000)
+│   ├── seed.py              ← Database seeder script
+│   ├── schema.sql           ← ⚠️ Run this in Supabase SQL Editor first!
+│   ├── .env                 ← Backend env vars (service role key)
+│   └── requirements.txt
 │
 ├── requirements.txt   ← Human-readable dependency reference
 └── README.md
@@ -91,14 +87,14 @@ npm install
 ```bash
 # Run from: clo-bulk/backend/
 cd backend
-npm install
+pip install -r requirements.txt
 ```
 
 ### 3. Seed the Database (optional, adds sample campaigns)
 ```bash
 # Run from: clo-bulk/backend/
 cd backend
-npm run db:seed
+python seed.py
 ```
 > ⚠️ Run `schema.sql` in Supabase first, or this will fail.
 
@@ -106,9 +102,9 @@ npm run db:seed
 ```bash
 # Run from: clo-bulk/backend/
 cd backend
-npm run dev
+python main.py
 ```
-> Server starts at **http://localhost:4000**
+> Server starts at **http://localhost:8000**
 
 ### 5. Start the Frontend Dev Server
 ```bash
@@ -163,7 +159,7 @@ Toggle theme with the **☀️/🌙 button** in the navbar. Preference is saved 
 
 ---
 
-## 🛣️ API Routes (Backend — port 4000)
+## 🛣️ API Routes (Backend — port 8000)
 
 | Method | Route | Description |
 |---|---|---|

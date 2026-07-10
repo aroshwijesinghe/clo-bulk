@@ -68,6 +68,53 @@
 }
 .imagePrice span { font-size: 0.9rem; font-weight: 400; color: rgba(255,255,255,0.7); }
 
+/* Carousel */
+.carouselArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s;
+}
+.carouselArrow:hover {
+  background: rgba(124, 58, 237, 0.8);
+}
+.carouselLeft { left: 10px; }
+.carouselRight { right: 10px; }
+
+.carouselDots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dotActive {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.2);
+}
+
 /* Body */
 .body {
   padding: 1.75rem;

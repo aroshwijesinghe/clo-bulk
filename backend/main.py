@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 
-from .app.routers import campaigns, orders
+from app.routers import campaigns, orders
 
 load_dotenv()
 

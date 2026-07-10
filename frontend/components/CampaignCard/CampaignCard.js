@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import styles from './CampaignCard.module.css';
@@ -13,13 +14,15 @@ const IMAGE_MAP = {
   'merino wool socks 3-pack': '/images/socks.png',
 };
 
-function getImage(campaign) {
-  if (campaign.imageUrl) return campaign.imageUrl;
+function getImages(campaign) {
+  if (campaign.imageUrl) {
+    return campaign.imageUrl.split(',').map(s => s.trim()).filter(Boolean);
+  }
   const key = campaign.title.toLowerCase();
   for (const [k, v] of Object.entries(IMAGE_MAP)) {
-    if (key.includes(k.split(' ')[0])) return v;
+    if (key.includes(k.split(' ')[0])) return [v];
   }
-  return null;
+  return [];
 }
 
 export default function CampaignCard({ campaign, onClick }) {
@@ -28,7 +31,19 @@ export default function CampaignCard({ campaign, onClick }) {
   const isFull = progress >= 100;
   const endDate = new Date(campaign.endDate);
   const daysLeft = Math.max(0, Math.ceil((endDate - Date.now()) / 86400000));
-  const image = getImage(campaign);
+  
+  const images = getImages(campaign);
+  const [currentImageIdx, setCurrentImageIdx] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImageIdx((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  const image = images[currentImageIdx] || null;
 
   let accentColor = 'var(--accent)';
   if (isAlmostFull) accentColor = 'var(--warning)';
@@ -48,14 +63,22 @@ export default function CampaignCard({ campaign, onClick }) {
       {/* Image */}
       <div className={styles.imageWrap}>
         {image ? (
-          <Image
-            src={image}
-            alt={campaign.title}
-            fill
-            className={styles.image}
-            sizes="(max-width: 600px) 100vw, 340px"
-            style={{ objectFit: 'cover' }}
-          />
+          <motion.div
+            key={currentImageIdx}
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            style={{ width: '100%', height: '100%', position: 'absolute' }}
+          >
+            <Image
+              src={image}
+              alt={campaign.title}
+              fill
+              className={styles.image}
+              sizes="(max-width: 600px) 100vw, 340px"
+              style={{ objectFit: 'cover' }}
+            />
+          </motion.div>
         ) : (
           <div className={styles.imagePlaceholder}>
             <span>{campaign.title[0]}</span>

@@ -13,8 +13,9 @@ function AuthForm() {
   const { user } = useAuth();
 
   const [mode, setMode] = useState(searchParams.get('mode') === 'signup' ? 'signup' : 'login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('developer@example.com');
+  const [password, setPassword] = useState('developer123');
+  const [otpCode, setOtpCode] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,33 +37,67 @@ function AuthForm() {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        
+        // Log the login to LoginHistory table
+        try {
+          await supabase.from('LoginHistory').insert([{ email, login_time: new Date().toISOString() }]);
+        } catch (err) {
+          console.warn('Could not save login history. Table might not exist.', err);
+        }
+
         router.push('/campaigns');
-      } else {
+      } else if (mode === 'signup') {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: { data: { full_name: displayName } },
         });
         if (error) throw error;
-        setMessage('Check your email to confirm your account, then sign in!');
-        setMode('login');
+        setMessage('Code sent! Please check your email and enter the 6-digit code below.');
+        setMode('verify');
+      } else if (mode === 'verify') {
+        const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'signup' });
+        if (error) throw error;
+        
+        try {
+          await supabase.from('LoginHistory').insert([{ email, login_time: new Date().toISOString() }]);
+        } catch (err) {
+          console.warn('Could not save login history.', err);
+        }
+
+        router.push('/campaigns');
       }
     } catch (err) {
-      setError(err.message || 'Something went wrong');
+      let msg = 'Something went wrong';
+      if (err instanceof Error) msg = err.message;
+      else if (err?.message) msg = err.message;
+      else if (err?.error_description) msg = err.error_description;
+      else if (typeof err === 'string') msg = err;
+      else msg = JSON.stringify(err);
+      
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogle = async () => {
+  const quickLogin = async (e, p) => {
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/campaigns` },
-    });
-    if (error) {
-      setError(error.message);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: e, password: p });
+      if (error) throw error;
+      
+      // Log the login to LoginHistory table
+      try {
+        await supabase.from('LoginHistory').insert([{ email: e, login_time: new Date().toISOString() }]);
+      } catch (err) {
+        console.warn('Could not save login history. Table might not exist.', err);
+      }
+
+      router.push('/campaigns');
+    } catch (err) {
+      setError(err.message || 'Something went wrong');
       setLoading(false);
     }
   };
@@ -83,48 +118,58 @@ function AuthForm() {
         <div className={styles.header}>
           <Link href="/" className={styles.brand}>BulkThreads</Link>
           <h1 className={styles.title}>
-            {mode === 'login' ? 'Welcome back' : 'Create account'}
+            {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create account' : 'Verify Email'}
           </h1>
           <p className={styles.subtitle}>
             {mode === 'login'
               ? 'Sign in to access bulk order campaigns'
-              : 'Join thousands getting wholesale prices together'}
+              : mode === 'signup'
+              ? 'Join thousands getting wholesale prices together'
+              : `Enter the code sent to ${email}`}
           </p>
         </div>
 
         {/* Mode toggle */}
-        <div className={styles.modeToggle}>
-          <button
-            className={`${styles.modeBtn} ${mode === 'login' ? styles.modeActive : ''}`}
-            onClick={() => { setMode('login'); setError(''); setMessage(''); }}
-          >Sign In</button>
-          <button
-            className={`${styles.modeBtn} ${mode === 'signup' ? styles.modeActive : ''}`}
-            onClick={() => { setMode('signup'); setError(''); setMessage(''); }}
-          >Create Account</button>
-        </div>
-
-        {/* Google button */}
-        <button onClick={handleGoogle} className={styles.googleBtn} disabled={loading}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          Continue with Google
-        </button>
-
-        {/* Divider */}
-        <div className={styles.divider}>
-          <span className={styles.dividerLine} />
-          <span className={styles.dividerText}>or</span>
-          <span className={styles.dividerLine} />
-        </div>
+        {mode !== 'verify' && (
+          <div className={styles.modeToggle}>
+            <button
+              className={`${styles.modeBtn} ${mode === 'login' ? styles.modeActive : ''}`}
+              onClick={() => { setMode('login'); setError(''); setMessage(''); }}
+            >Sign In</button>
+            <button
+              className={`${styles.modeBtn} ${mode === 'signup' ? styles.modeActive : ''}`}
+              onClick={() => { setMode('signup'); setError(''); setMessage(''); }}
+            >Create Account</button>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleAuth} className={styles.form} noValidate>
           <AnimatePresence mode="wait">
+            {mode === 'verify' && (
+              <motion.div
+                key="otpCode"
+                className={styles.field}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label htmlFor="otpCode" className={styles.label}>Verification Code</label>
+                <input
+                  id="otpCode"
+                  type="text"
+                  className={styles.input}
+                  placeholder="123456"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  required={mode === 'verify'}
+                  autoComplete="one-time-code"
+                  autoFocus
+                />
+              </motion.div>
+            )}
+
             {mode === 'signup' && (
               <motion.div
                 key="displayName"
@@ -149,56 +194,60 @@ function AuthForm() {
             )}
           </AnimatePresence>
 
-          <div className={styles.field}>
-            <label htmlFor="email" className={styles.label}>Email Address</label>
-            <input
-              id="email"
-              type="email"
-              className={styles.input}
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              autoFocus
-            />
-          </div>
-
-          <div className={styles.field}>
-            <div className={styles.labelRow}>
-              <label htmlFor="password" className={styles.label}>Password</label>
-              {mode === 'login' && (
-                <button type="button" className={styles.forgotLink} onClick={async () => {
-                  if (!email) { setError('Enter your email first'); return; }
-                  await supabase.auth.resetPasswordForEmail(email);
-                  setMessage('Password reset email sent!');
-                }}>
-                  Forgot password?
-                </button>
-              )}
-            </div>
-            <div className={styles.passwordWrap}>
+          {mode !== 'verify' && (
+            <div className={styles.field}>
+              <label htmlFor="email" className={styles.label}>Email Address</label>
               <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
+                id="email"
+                type="email"
                 className={styles.input}
-                placeholder={mode === 'signup' ? 'Minimum 6 characters' : 'Your password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                minLength={6}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                autoComplete="email"
+                autoFocus
               />
-              <button
-                type="button"
-                className={styles.eyeBtn}
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
             </div>
-          </div>
+          )}
+
+          {mode !== 'verify' && (
+            <div className={styles.field}>
+              <div className={styles.labelRow}>
+                <label htmlFor="password" className={styles.label}>Password</label>
+                {mode === 'login' && (
+                  <button type="button" className={styles.forgotLink} onClick={async () => {
+                    if (!email) { setError('Enter your email first'); return; }
+                    await supabase.auth.resetPasswordForEmail(email);
+                    setMessage('Password reset email sent!');
+                  }}>
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <div className={styles.passwordWrap}>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  className={styles.input}
+                  placeholder={mode === 'signup' ? 'Minimum 6 characters' : 'Your password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                />
+                <button
+                  type="button"
+                  className={styles.eyeBtn}
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Messages */}
           <AnimatePresence>
@@ -224,21 +273,42 @@ function AuthForm() {
             {loading ? (
               <span className={styles.spinner} />
             ) : (
-              mode === 'login' ? 'Sign In' : 'Create Account'
+              mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Verify & Login'
             )}
           </button>
         </form>
 
-        <p className={styles.footer}>
-          {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-          <button
-            className={styles.switchLink}
-            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setMessage(''); }}
-          >
-            {mode === 'login' ? 'Create one' : 'Sign in'}
-          </button>
-        </p>
+        {mode !== 'verify' && (
+          <p className={styles.footer}>
+            {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+            <button
+              className={styles.switchLink}
+              onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setMessage(''); }}
+            >
+              {mode === 'login' ? 'Create one' : 'Sign in'}
+            </button>
+          </p>
+        )}
       </motion.div>
+
+      {/* DEV QUICK LOGIN */}
+      <div style={{ position: 'fixed', bottom: 20, right: 20, padding: 16, background: 'var(--bg)', border: '1px solid var(--accent)', borderRadius: 8, zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <p style={{ fontSize: '0.8rem', marginBottom: 8, opacity: 0.7 }}>Dev Quick Login</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+           <button onClick={() => quickLogin('admin@example.com', 'admin123')} style={{ fontSize: '0.8rem', padding: '6px 12px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', textAlign: 'left' }}>
+             Admin (admin@example.com)<br />
+             <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>PW: admin123</span>
+           </button>
+           <button onClick={() => quickLogin('user@example.com', 'user123')} style={{ fontSize: '0.8rem', padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: 4, cursor: 'pointer', textAlign: 'left' }}>
+             User (user@example.com)<br />
+             <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>PW: user123</span>
+           </button>
+           <button onClick={() => quickLogin('developers11@gmail.com', 'password123')} style={{ fontSize: '0.8rem', padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: 4, cursor: 'pointer', textAlign: 'left' }}>
+             Developer (developers11@gmail.com)<br />
+             <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>PW: password123</span>
+           </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -20,6 +20,7 @@ export default function CreateCampaignPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [files, setFiles] = useState([]);
 
   if (!user) {
     return (
@@ -40,18 +41,74 @@ export default function CreateCampaignPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleFileChange = (e) => {
+    const selected = Array.from(e.target.files);
+    setFiles(selected);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    const parsedPrice = parseFloat(form.price);
+    const parsedTarget = parseInt(form.targetCount);
+
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      setError('Please enter a valid price greater than 0.');
+      setLoading(false);
+      return;
+    }
+    if (isNaN(parsedTarget) || parsedTarget < 2) {
+      setError('Please enter a valid target quantity of at least 2.');
+      setLoading(false);
+      return;
+    }
+
+    const pastedUrls = form.imageUrl
+      .split(/[\n,]+/)
+      .map((url) => url.trim())
+      .filter((url) => url !== '');
+
+    if (pastedUrls.length + files.length > 3) {
+      setError('You can only provide a maximum of 3 images total (links + uploads).');
+      setLoading(false);
+      return;
+    }
+
+    // Upload files
+    const uploadedUrls = [];
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('campaign-images')
+        .upload(filePath, file, { cacheControl: '3600', upsert: false });
+
+      if (uploadError) {
+        setError(`Failed to upload image: ${uploadError.message}`);
+        setLoading(false);
+        return;
+      }
+
+      const { data: publicData } = supabase.storage
+        .from('campaign-images')
+        .getPublicUrl(filePath);
+      
+      uploadedUrls.push(publicData.publicUrl);
+    }
+
+    const finalImageUrls = [...pastedUrls, ...uploadedUrls].join(',');
+
     const { data, error } = await supabase.from('Campaign').insert([{
       title: form.title,
       description: form.description,
-      price: parseFloat(form.price),
-      targetCount: parseInt(form.targetCount),
+      price: parsedPrice,
+      targetCount: parsedTarget,
       endDate: new Date(form.endDate).toISOString(),
-      imageUrl: form.imageUrl || null,
+      imageUrl: finalImageUrls || null,
       currentCount: 0,
       status: 'active',
       createdBy: user.id,
@@ -158,17 +215,35 @@ export default function CreateCampaignPage() {
                 />
               </div>
 
-              {/* Image URL */}
-              <div className={styles.field}>
-                <label className={styles.label}>Image URL (optional)</label>
-                <input
+              {/* Image URLs */}
+              <div className={`${styles.field} ${styles.fullWidth}`}>
+                <label className={styles.label}>Image URLs (Optional)</label>
+                <textarea
                   name="imageUrl"
-                  type="url"
                   value={form.imageUrl}
                   onChange={handleChange}
-                  className={styles.input}
-                  placeholder="https://example.com/image.jpg"
+                  className={styles.textarea}
+                  placeholder="Paste image links here (one per line, or comma separated)"
+                  rows={2}
                 />
+              </div>
+
+              {/* Upload Images */}
+              <div className={`${styles.field} ${styles.fullWidth}`}>
+                <label className={styles.label}>Upload Images (Max 3 total)</label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className={styles.input}
+                  style={{ padding: '10px' }}
+                />
+                {files.length > 0 && (
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    {files.length} file(s) selected
+                  </p>
+                )}
               </div>
             </div>
 

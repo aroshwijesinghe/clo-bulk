@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
@@ -18,13 +18,15 @@ const IMAGE_MAP = {
   sock:    '/images/socks.png',
 };
 
-function getImage(campaign) {
-  if (campaign.imageUrl) return campaign.imageUrl;
+function getImages(campaign) {
+  if (campaign.imageUrl) {
+    return campaign.imageUrl.split(',').map(s => s.trim()).filter(Boolean);
+  }
   const t = campaign.title.toLowerCase();
   for (const [k, v] of Object.entries(IMAGE_MAP)) {
-    if (t.includes(k)) return v;
+    if (t.includes(k)) return [v];
   }
-  return null;
+  return [];
 }
 
 export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
@@ -38,10 +40,34 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
 
   const progress = Math.min(Math.round((campaign.currentCount / campaign.targetCount) * 100), 100);
   const remaining = campaign.targetCount - campaign.currentCount;
-  const image = getImage(campaign);
+  
+  const images = getImages(campaign);
+  const [currentImageIdx, setCurrentImageIdx] = useState(0);
+
+  const nextImage = (e) => {
+    if (e) e.stopPropagation();
+    setCurrentImageIdx((prev) => (prev + 1) % images.length);
+  };
+  const prevImage = (e) => {
+    if (e) e.stopPropagation();
+    setCurrentImageIdx((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImageIdx((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [images.length]);
 
   const handleJoin = async () => {
     if (!user) { router.push('/auth'); return; }
+    if (quantity > remaining) {
+      setError(`Only ${remaining} spots left.`);
+      return;
+    }
+    
     setLoading(true);
     setError('');
     const { error } = await supabase.from('Order').insert([{
@@ -83,8 +109,25 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
 
         {/* Image */}
         <div className={styles.imageWrap}>
-          {image ? (
-            <Image src={image} alt={campaign.title} fill style={{ objectFit: 'cover' }} />
+          {images.length > 0 ? (
+            <>
+              <Image key={currentImageIdx} src={images[currentImageIdx]} alt={campaign.title} fill style={{ objectFit: 'cover' }} />
+              {images.length > 1 && (
+                <>
+                  <button className={`${styles.carouselArrow} ${styles.carouselLeft}`} onClick={prevImage}>←</button>
+                  <button className={`${styles.carouselArrow} ${styles.carouselRight}`} onClick={nextImage}>→</button>
+                  <div className={styles.carouselDots}>
+                    {images.map((img, idx) => (
+                      <div
+                        key={idx}
+                        className={`${styles.dot} ${idx === currentImageIdx ? styles.dotActive : ''}`}
+                        onClick={(e) => { e.stopPropagation(); setCurrentImageIdx(idx); }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           ) : (
             <div className={styles.imageFallback}>
               <span>{campaign.title[0]}</span>
@@ -145,7 +188,7 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
                 <div className={styles.qtyRow}>
                   <button className={styles.qtyBtn} onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
                   <span className={styles.qtyNum}>{quantity}</span>
-                  <button className={styles.qtyBtn} onClick={() => setQuantity(Math.min(10, quantity + 1))}>+</button>
+                  <button className={styles.qtyBtn} onClick={() => setQuantity(Math.min(remaining, quantity + 1))}>+</button>
                   <span className={styles.qtyTotal}>= ${(campaign.price * quantity).toFixed(2)}</span>
                 </div>
               </div>

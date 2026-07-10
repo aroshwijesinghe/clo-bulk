@@ -16,7 +16,7 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, loading, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
 
@@ -68,6 +68,11 @@ export default function Navbar() {
           {!loading && (
             user ? (
               <div className={styles.userMenu}>
+                {isAdmin && (
+                  <Link href="/admin" className={styles.signInBtn} style={{ marginRight: 12, padding: '6px 12px', fontSize: '0.85rem' }}>
+                    Admin Dashboard
+                  </Link>
+                )}
                 <Link href="/profile" className={styles.avatar} title="Profile">
                   {userInitial}
                 </Link>
@@ -120,6 +125,7 @@ export default function Navbar() {
                 <Link href="/profile" className={styles.mobileLink}>My Profile</Link>
                 <Link href="/orders" className={styles.mobileLink}>My Orders</Link>
                 <Link href="/settings" className={styles.mobileLink}>Settings</Link>
+                {isAdmin && <Link href="/admin" className={styles.mobileLink} style={{ color: 'var(--accent)' }}>Admin Dashboard</Link>}
                 <button onClick={signOut} className={styles.mobileSignOut}>Sign Out</button>
               </>
             ) : (
