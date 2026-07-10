@@ -7,6 +7,11 @@
 -- Enable UUID extension (usually already enabled in Supabase)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- ── Drop Existing Tables (to ensure schema updates apply) ─────
+DROP TABLE IF EXISTS "Order" CASCADE;
+DROP TABLE IF EXISTS "Campaign" CASCADE;
+DROP TABLE IF EXISTS "Profile" CASCADE;
+
 -- ── Campaign Table ────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS "Campaign" (
   "id"           UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
