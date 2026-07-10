@@ -1,48 +1,186 @@
-# BulkThreads - Premium Group Buying Website
+# BulkThreads 🧵
 
-A platform for users to participate in group buying of premium clothing to achieve bulk order discounts. This Next.js application allows users to browse clothing items, join group buying campaigns, and track the progress of bulk orders until the minimum quantity for a discount is reached.
+> **Group buying for premium clothing. Wholesale prices, together.**
 
-## Features
+BulkThreads is a modern bulk-order platform where people join campaigns to hit a minimum quantity target — unlocking wholesale pricing for everyone. Built with **Next.js 16**, **Express.js**, and **Supabase** (PostgreSQL + Auth).
 
-- **Fluid Apple-like UI**: Built using Vanilla CSS Modules and Framer Motion for premium aesthetics and micro-interactions.
-- **Campaign Dashboard**: View active group buying campaigns and their progress.
-- **Simulated Checkout**: Placeholders for e-commerce integration.
-- **Supabase Database**: Uses a robust PostgreSQL database connected via Prisma ORM.
+---
 
-## Tech Stack
+## 📁 Project Structure
 
-- **Frontend & Backend**: Next.js (App Router)
-- **Styling**: Vanilla CSS Modules (Glassmorphism, Dark Mode)
-- **Animations**: Framer Motion
-- **Database**: Supabase (PostgreSQL)
-- **ORM**: Prisma Client
+```
+clo-bulk/
+├── frontend/          ← Next.js 16 app (UI, pages, components)
+│   ├── app/
+│   │   ├── page.js              ← Home page (hero + live campaigns)
+│   │   ├── layout.js            ← Root layout (auth + theme providers)
+│   │   ├── globals.css          ← Design system & dark/light mode
+│   │   ├── page.module.css
+│   │   ├── auth/                ← Sign In / Create Account / Google Auth
+│   │   ├── campaigns/           ← All campaigns listing
+│   │   ├── campaigns/create/    ← Start a new bulk order campaign
+│   │   ├── orders/              ← User's order history
+│   │   ├── profile/             ← User profile editor
+│   │   └── settings/            ← App preferences & account settings
+│   ├── components/
+│   │   ├── Navbar/              ← Global nav with auth state + theme toggle
+│   │   ├── Footer/              ← Site footer
+│   │   ├── CampaignCard/        ← Campaign listing card with product image
+│   │   ├── CampaignModal/       ← Join campaign modal (size, qty, order)
+│   │   ├── HowItWorks/          ← Animated 4-step explainer section
+│   │   └── ThemeProvider/       ← Dark / Light mode context
+│   ├── lib/
+│   │   ├── supabase.js          ← Browser Supabase client (anon key)
+│   │   └── AuthContext.js       ← JWT auth context + session management
+│   ├── public/images/           ← AI-generated product photos
+│   ├── .env.local               ← Frontend env vars (Supabase public keys)
+│   └── package.json
+│
+├── backend/           ← Express.js REST API
+│   ├── src/
+│   │   ├── server.js            ← Express entry point (port 4000)
+│   │   ├── seed.js              ← Database seeder script
+│   │   └── routes/
+│   │       ├── campaigns.js     ← CRUD routes for campaigns
+│   │       └── orders.js        ← Order placement routes
+│   ├── lib/
+│   │   └── supabase.js          ← Server Supabase client (service role)
+│   ├── schema.sql               ← ⚠️ Run this in Supabase SQL Editor first!
+│   ├── .env                     ← Backend env vars (service role key)
+│   └── package.json
+│
+├── requirements.txt   ← Human-readable dependency reference
+└── README.md
+```
 
-## Getting Started
+---
 
-1. Clone or download this repository.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up your `.env.local` file with Supabase credentials:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL="..."
-   NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
-   SUPABASE_SERVICE_ROLE_KEY="..."
-   SUPABASE_DB_PASSWORD="..."
-   DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_ID.supabase.co:5432/postgres"
-   ```
-4. Push the Prisma schema to the database:
-   ```bash
-   npx prisma db push
-   ```
-5. Run the development server:
-   ```bash
-   npm run dev
-   ```
-6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🗄️ Database Setup (IMPORTANT — do this first!)
 
-## Next Phases
+The database tables **must be created manually** in your Supabase SQL Editor before running the app.
 
-- Full implementation of NextAuth (Google/Email authentication).
-- Integration of a real payment portal (e.g., Stripe) to handle campaign funding.
+### Steps:
+1. Open your Supabase dashboard: https://supabase.com/dashboard/project/lafrwgoojoqijimsixsz/sql
+2. Click **New Query**
+3. Copy and paste the entire contents of [`backend/schema.sql`](./backend/schema.sql)
+4. Click **Run**
+
+This creates:
+- `Campaign` table — bulk order campaigns
+- `Order` table — user orders joined to campaigns
+- `Profile` table — extends Supabase auth users
+- RLS (Row Level Security) policies
+- Auto-profile creation trigger on signup
+
+---
+
+## 🚀 How to Run
+
+### Prerequisites
+- Node.js ≥ 18
+- npm ≥ 9
+
+### 1. Install Frontend Dependencies
+```bash
+# Run from: clo-bulk/frontend/
+cd frontend
+npm install
+```
+
+### 2. Install Backend Dependencies
+```bash
+# Run from: clo-bulk/backend/
+cd backend
+npm install
+```
+
+### 3. Seed the Database (optional, adds sample campaigns)
+```bash
+# Run from: clo-bulk/backend/
+cd backend
+npm run db:seed
+```
+> ⚠️ Run `schema.sql` in Supabase first, or this will fail.
+
+### 4. Start the Backend Server
+```bash
+# Run from: clo-bulk/backend/
+cd backend
+npm run dev
+```
+> Server starts at **http://localhost:4000**
+
+### 5. Start the Frontend Dev Server
+```bash
+# Run from: clo-bulk/frontend/
+cd frontend
+npm run dev
+```
+> App opens at **http://localhost:3000**
+
+---
+
+## 🔐 Authentication — How JWT Works
+
+BulkThreads uses **Supabase Auth with JWT** (JSON Web Tokens):
+
+1. **Sign Up / Sign In** → Supabase returns a signed JWT containing your user ID and email
+2. **JWT stored** automatically in `localStorage` by the Supabase JS client
+3. **All API requests** automatically include `Authorization: Bearer <jwt>` in headers
+4. **Supabase backend** verifies the JWT signature using your project's secret key
+5. **Row Level Security** uses `auth.uid()` from the verified JWT — so users can only see their own orders and profile
+6. **Auto-refresh** — Supabase silently refreshes your token before it expires. You don't need to do anything.
+
+**Google OAuth:** Clicking "Continue with Google" redirects you to Google's login, then back to `/campaigns` with a valid JWT session automatically created.
+
+---
+
+## 🎨 Design System
+
+| Token | Dark Mode | Light Mode |
+|---|---|---|
+| `--accent` | Electric Violet `#7c3aed` | Same |
+| `--accent-light` | `#8b5cf6` | Same |
+| `--citrine` | Neon Citrine `#d4af37` | `#b8860b` |
+| `--bg` | `#0a0a0f` (Obsidian) | `#f8f7ff` |
+| `--text-primary` | `#f0eff8` | `#0f0e1a` |
+
+Toggle theme with the **☀️/🌙 button** in the navbar. Preference is saved to `localStorage`.
+
+---
+
+## 📦 Pages
+
+| Page | Route | Auth Required |
+|---|---|---|
+| Home | `/` | No |
+| All Campaigns | `/campaigns` | No |
+| Start Campaign | `/campaigns/create` | ✅ Yes |
+| Sign In / Register | `/auth` | No |
+| My Orders | `/orders` | ✅ Yes |
+| Profile | `/profile` | ✅ Yes |
+| Settings | `/settings` | ✅ Yes |
+
+---
+
+## 🛣️ API Routes (Backend — port 4000)
+
+| Method | Route | Description |
+|---|---|---|
+| GET | `/api/campaigns` | List all campaigns |
+| GET | `/api/campaigns/:id` | Get single campaign + orders |
+| POST | `/api/campaigns` | Create a campaign |
+| PATCH | `/api/campaigns/:id` | Update a campaign |
+| DELETE | `/api/campaigns/:id` | Delete a campaign |
+| GET | `/api/orders` | List all orders |
+| POST | `/api/orders` | Place an order |
+| GET | `/api/orders/:id` | Get a single order |
+
+---
+
+## 🔮 Upcoming Features (Next Phase)
+
+- [ ] **Stripe Payments** — Charge on campaign goal completion
+- [ ] **Admin Dashboard** — Campaign management, analytics
+- [ ] **Real-time Updates** — Supabase Realtime for live participant count
+- [ ] **Email Notifications** — Supabase Edge Functions + Resend

@@ -1,11 +1,28 @@
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Rewrites: proxy /api/* calls to the backend server during development
+  turbopack: {
+    root: __dirname,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lafrwgoojoqijimsixsz.supabase.co',
+        pathname: '/storage/v1/object/**',
+      },
+    ],
+  },
+  // Rewrites proxy /api/* to the Express backend
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/:path*`,
+        destination: 'http://localhost:4000/api/:path*',
       },
     ];
   },

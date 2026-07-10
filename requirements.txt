@@ -1,69 +1,58 @@
 # =============================================================================
 # BulkThreads — Project Requirements
 # =============================================================================
-# This is a JavaScript (Node.js) project.
-# The authoritative manifests are:
-#   frontend/package.json  — Next.js app
-#   backend/package.json   — Express API server
+# JavaScript (Node.js) project — no Python/pip required.
+# Authoritative package manifests:
+#   frontend/package.json  ← Next.js app
+#   backend/package.json   ← Express API server
 #
 # Runtime requirements:
 #   Node.js  >= 18.x   (LTS recommended)
 #   npm      >= 9.x
 # =============================================================================
 
-
 # ─── FRONTEND (frontend/) ─────────────────────────────────────────────────────
-# Framework & Runtime
 next==16.2.10
 react==19.2.4
 react-dom==19.2.4
-
-# Animations (Apple-like fluid transitions)
 framer-motion>=12.42.2
-
-# Database / Supabase client (public queries)
 @supabase/supabase-js>=2.110.2
 
-# Dev dependencies
+# Dev
 eslint>=9
 eslint-config-next==16.2.10
 
-
 # ─── BACKEND (backend/) ──────────────────────────────────────────────────────
-# HTTP Server
 express>=4.21.2
-
-# Cross-origin requests
 cors>=2.8.5
-
-# Environment variables
 dotenv>=16.4.5
-
-# Database client (Supabase — service role for full access)
 @supabase/supabase-js>=2.110.2
 
-# Dev dependencies
+# Dev
 nodemon>=3.1.9
 
+# ─── REMOVED ─────────────────────────────────────────────────────────────────
+# prisma (ORM) — removed in favour of @supabase/supabase-js direct client
+# @prisma/client — same
 
-# ─── SYSTEM / PLATFORM ───────────────────────────────────────────────────────
-# Database:  Supabase (PostgreSQL) — cloud hosted, no ORM needed
-# Auth:      Google OAuth placeholder — full implementation in next phase
-# Payments:  Stripe integration planned for next phase
-# NOTE:      Prisma ORM has been removed. All DB calls use @supabase/supabase-js directly.
+# ─── SYSTEM / PLATFORM ────────────────────────────────────────────────────────
+# Database:    Supabase PostgreSQL (cloud) — no local DB needed
+# Auth:        Supabase Auth with JWT (email/pass + Google OAuth)
+# Payments:    Stripe — planned for next phase
+# Images:      AI-generated product photos in frontend/public/images/
 
-
-# ─── HOW TO INSTALL ───────────────────────────────────────────────────────────
-# Frontend:
-#   cd frontend && npm install
+# ─── HOW TO INSTALL & RUN ────────────────────────────────────────────────────
 #
-# Backend:
-#   cd backend && npm install
+# ⚠️  FIRST: Create database tables
+#   1. Open https://supabase.com/dashboard/project/lafrwgoojoqijimsixsz/sql
+#   2. Paste backend/schema.sql and click Run
 #
-# Run development servers:
-#   Frontend:  cd frontend && npm run dev   (http://localhost:3000)
-#   Backend:   cd backend  && npm run dev   (http://localhost:4000)
+# FRONTEND — run from: clo-bulk/frontend/
+#   npm install
+#   npm run dev       → http://localhost:3000
 #
-# Seed database with sample campaigns:
-#   cd backend && npm run db:seed
+# BACKEND — run from: clo-bulk/backend/
+#   npm install
+#   npm run dev       → http://localhost:4000
+#   npm run db:seed   → seed sample campaign data (run schema.sql first)
 # =============================================================================
