@@ -1,34 +1,36 @@
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+
+// Use service role key on the server — never expose this to the browser
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export async function GET() {
-  try {
-    const campaigns = await prisma.campaign.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    return NextResponse.json(campaigns);
-  } catch (error) {
-    console.error('Error fetching campaigns:', error);
-    return NextResponse.json({ error: 'Failed to fetch campaigns' }, { status: 500 });
-  }
+  const { data, error } = await supabase
+    .from('Campaign')
+    .select('*')
+    .order('createdAt', { ascending: false });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
 }
 
 export async function POST(request) {
-  try {
-    const body = await request.json();
-    const campaign = await prisma.campaign.create({
-      data: {
-        title: body.title,
-        description: body.description,
-        price: body.price,
-        targetCount: body.targetCount,
-        endDate: new Date(body.endDate),
-        imageUrl: body.imageUrl,
-      }
-    });
-    return NextResponse.json(campaign, { status: 201 });
-  } catch (error) {
-    console.error('Error creating campaign:', error);
-    return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
+  const body = await request.json();
+  const { title, description, price, targetCount, endDate, imageUrl } = body;
+
+  if (!title || !description || !price || !targetCount || !endDate) {
+    return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
   }
+
+  const { data, error } = await supabase
+    .from('Campaign')
+    .insert([{ title, description, price, targetCount, endDate, imageUrl, currentCount: 0 }])
+    .select()
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data, { status: 201 });
 }

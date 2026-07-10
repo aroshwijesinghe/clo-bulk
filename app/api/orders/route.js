@@ -1,35 +1,46 @@
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export async function POST(request) {
-  try {
-    const body = await request.json();
-    const { campaignId, userId, quantity, size, color } = body;
+  const body = await request.json();
+  const { campaignId, userId, quantity, size, color } = body;
 
-    // Create the order
-    const order = await prisma.order.create({
-      data: {
-        campaignId,
-        userId: userId || 'anonymous', // Placeholder until auth is added
-        quantity,
-        size,
-        color,
-      }
-    });
-
-    // Increment the campaign's current count
-    await prisma.campaign.update({
-      where: { id: campaignId },
-      data: {
-        currentCount: {
-          increment: quantity
-        }
-      }
-    });
-
-    return NextResponse.json(order, { status: 201 });
-  } catch (error) {
-    console.error('Error processing order:', error);
-    return NextResponse.json({ error: 'Failed to process order' }, { status: 500 });
+  if (!campaignId || !quantity) {
+    return NextResponse.json({ error: 'campaignId and quantity are required.' }, { status: 400 });
   }
+
+  // 1. Get campaign
+  const { data: campaign, error: campaignErr } = await supabase
+    .from('Campaign')
+    .select('id, currentCount')
+    .eq('id', campaignId)
+    .single();
+
+  if (campaignErr || !campaign) {
+    return NextResponse.json({ error: 'Campaign not found.' }, { status: 404 });
+  }
+
+  // 2. Insert order
+  const { data: order, error: orderErr } = await supabase
+    .from('Order')
+    .insert([{ campaignId, userId: userId || 'anonymous', quantity, size, color }])
+    .select()
+    .single();
+
+  if (orderErr) return NextResponse.json({ error: orderErr.message }, { status: 500 });
+
+  // 3. Increment campaign count
+  const { error: updateErr } = await supabase
+    .from('Campaign')
+    .update({ currentCount: campaign.currentCount + parseInt(quantity) })
+    .eq('id', campaignId);
+
+  if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+
+  return NextResponse.json(order, { status: 201 });
 }

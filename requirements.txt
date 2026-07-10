@@ -1,0 +1,58 @@
+# =============================================================================
+# BulkThreads — Project Requirements
+# =============================================================================
+# JavaScript (Node.js) project — no Python/pip required.
+# Authoritative package manifests:
+#   frontend/package.json  ← Next.js app
+#   backend/package.json   ← Express API server
+#
+# Runtime requirements:
+#   Node.js  >= 18.x   (LTS recommended)
+#   npm      >= 9.x
+# =============================================================================
+
+# ─── FRONTEND (frontend/) ─────────────────────────────────────────────────────
+next==16.2.10
+react==19.2.4
+react-dom==19.2.4
+framer-motion>=12.42.2
+@supabase/supabase-js>=2.110.2
+
+# Dev
+eslint>=9
+eslint-config-next==16.2.10
+
+# ─── BACKEND (backend/) ──────────────────────────────────────────────────────
+express>=4.21.2
+cors>=2.8.5
+dotenv>=16.4.5
+@supabase/supabase-js>=2.110.2
+
+# Dev
+nodemon>=3.1.9
+
+# ─── REMOVED ─────────────────────────────────────────────────────────────────
+# prisma (ORM) — removed in favour of @supabase/supabase-js direct client
+# @prisma/client — same
+
+# ─── SYSTEM / PLATFORM ────────────────────────────────────────────────────────
+# Database:    Supabase PostgreSQL (cloud) — no local DB needed
+# Auth:        Supabase Auth with JWT (email/pass + Google OAuth)
+# Payments:    Stripe — planned for next phase
+# Images:      AI-generated product photos in frontend/public/images/
+
+# ─── HOW TO INSTALL & RUN ────────────────────────────────────────────────────
+#
+# ⚠️  FIRST: Create database tables
+#   1. Open https://supabase.com/dashboard/project/lafrwgoojoqijimsixsz/sql
+#   2. Paste backend/schema.sql and click Run
+#
+# FRONTEND — run from: clo-bulk/frontend/
+#   npm install
+#   npm run dev       → http://localhost:3000
+#
+# BACKEND — run from: clo-bulk/backend/
+#   npm install
+#   npm run dev       → http://localhost:4000
+#   npm run db:seed   → seed sample campaign data (run schema.sql first)
+# =============================================================================
