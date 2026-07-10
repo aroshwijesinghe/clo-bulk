@@ -12,8 +12,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'lafrwgoojoqijimsixsz.supabase.co',
-        pathname: '/storage/v1/object/**',
+        hostname: '**',
       },
     ],
   },
@@ -22,7 +21,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:4000/api/:path*',
+        destination: 'http://localhost:8000/api/:path*',
       },
     ];
   },

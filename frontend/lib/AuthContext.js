@@ -53,8 +53,10 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut();
   };
 
+  const isAdmin = user?.email === 'admin@example.com';
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signOut, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

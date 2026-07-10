@@ -7,6 +7,12 @@
 -- Enable UUID extension (usually already enabled in Supabase)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- ── Drop Existing Tables (to ensure schema updates apply) ─────
+DROP TABLE IF EXISTS "Order" CASCADE;
+DROP TABLE IF EXISTS "Campaign" CASCADE;
+DROP TABLE IF EXISTS "Profile" CASCADE;
+DROP TABLE IF EXISTS "LoginHistory" CASCADE;
+
 -- ── Campaign Table ────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS "Campaign" (
   "id"           UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -34,6 +40,13 @@ CREATE TABLE IF NOT EXISTS "Order" (
   "status"      TEXT NOT NULL DEFAULT 'pending' CHECK ("status" IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
   "createdAt"   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt"   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ── LoginHistory Table ────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS "LoginHistory" (
+  "id"          UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "email"       TEXT NOT NULL,
+  "login_time"  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ── Profile Table (extends Supabase auth.users) ───────────────
@@ -71,6 +84,11 @@ CREATE TRIGGER on_auth_user_created
 ALTER TABLE "Campaign" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Order"    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Profile"  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "LoginHistory" ENABLE ROW LEVEL SECURITY;
+
+-- LoginHistory: anyone can insert, only admins can select (or true for now to make it easy)
+CREATE POLICY "Anyone can insert login history" ON "LoginHistory" FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can view login history" ON "LoginHistory" FOR SELECT USING (true);
 
 -- Campaigns: everyone can view, authenticated users can create
 CREATE POLICY "Anyone can view campaigns"   ON "Campaign" FOR SELECT USING (true);
@@ -90,6 +108,12 @@ CREATE POLICY "Users can update own profile" ON "Profile" FOR UPDATE USING (auth
 CREATE INDEX IF NOT EXISTS idx_campaign_status ON "Campaign"("status");
 CREATE INDEX IF NOT EXISTS idx_order_campaign  ON "Order"("campaignId");
 CREATE INDEX IF NOT EXISTS idx_order_user      ON "Order"("userId");
+
+-- ── Storage Buckets ──────────────────────────────────────────────
+insert into storage.buckets (id, name, public) values ('campaign-images', 'campaign-images', true) on conflict (id) do nothing;
+
+create policy "Public Access" on storage.objects for select using ( bucket_id = 'campaign-images' );
+create policy "Auth Insert" on storage.objects for insert with check ( bucket_id = 'campaign-images' and auth.uid() = owner );
 
 -- ── Done ──────────────────────────────────────────────────────
 SELECT 'Schema created successfully' AS result;
