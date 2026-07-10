@@ -1,0 +1,99 @@
+.main {
+  min-height: 100vh;
+  padding-top: 64px; /* Account for navbar */
+}
+
+.hero {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(41, 151, 255, 0.15) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.heroContent {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.heroTitle {
+  font-size: 5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -2px;
+  margin-bottom: 1.5rem;
+}
+
+.heroAccent {
+  background: linear-gradient(135deg, #2997ff, #8a2be2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroDescription {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ctaButton {
+  padding: 16px 36px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border-radius: 30px;
+  box-shadow: 0 4px 14px rgba(41, 151, 255, 0.4);
+  transition: box-shadow 0.2s ease;
+}
+
+.ctaButton:hover {
+  box-shadow: 0 6px 20px rgba(41, 151, 255, 0.6);
+}
+
+.campaignsSection {
+  padding: 8rem 0;
+  background: #000;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 4rem;
+  letter-spacing: -0.5px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 3.5rem;
+  }
+  .heroDescription {
+    font-size: 1.1rem;
+  }
+}

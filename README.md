@@ -1,37 +1,48 @@
-# Bulk Order Clothing - Group Buying Website
+# BulkThreads - Premium Group Buying Website
 
-A platform for users to participate in group buying of clothes to achieve bulk order discounts. This website allows users to browse clothing items, join group buying campaigns, and track the progress of bulk orders until the minimum quantity for a discount is reached.
+A platform for users to participate in group buying of premium clothing to achieve bulk order discounts. This Next.js application allows users to browse clothing items, join group buying campaigns, and track the progress of bulk orders until the minimum quantity for a discount is reached.
 
-## Project Structure
+## Features
 
-```text
-bulk order/
-├── assets/
-│   └── images/       # Image assets (product images, logos, etc.)
-├── css/
-│   └── style.css     # Main stylesheet (Vanilla CSS)
-├── js/
-│   └── main.js       # Main Javascript logic
-├── pages/            # Additional HTML pages (e.g., product details, cart, checkout)
-├── index.html        # Main landing page
-└── README.md         # Project documentation
-```
+- **Fluid Apple-like UI**: Built using Vanilla CSS Modules and Framer Motion for premium aesthetics and micro-interactions.
+- **Campaign Dashboard**: View active group buying campaigns and their progress.
+- **Simulated Checkout**: Placeholders for e-commerce integration.
+- **Supabase Database**: Uses a robust PostgreSQL database connected via Prisma ORM.
 
-## Technologies Used
+## Tech Stack
 
-*   **HTML5**: Semantic structure.
-*   **CSS3**: Custom vanilla CSS for rich aesthetics, responsiveness, and modern design (e.g., glassmorphism, dynamic animations).
-*   **JavaScript (ES6+)**: Frontend logic, DOM manipulation, and interactivity.
+- **Frontend & Backend**: Next.js (App Router)
+- **Styling**: Vanilla CSS Modules (Glassmorphism, Dark Mode)
+- **Animations**: Framer Motion
+- **Database**: Supabase (PostgreSQL)
+- **ORM**: Prisma Client
 
 ## Getting Started
 
-1.  Clone or download this repository.
-2.  Open `index.html` in your web browser.
-3.  No build step or local server is strictly required for basic functionality, though you may use an extension like Live Server in VS Code for a better development experience.
+1. Clone or download this repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up your `.env.local` file with Supabase credentials:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL="..."
+   NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
+   SUPABASE_SERVICE_ROLE_KEY="..."
+   SUPABASE_DB_PASSWORD="..."
+   DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_ID.supabase.co:5432/postgres"
+   ```
+4. Push the Prisma schema to the database:
+   ```bash
+   npx prisma db push
+   ```
+5. Run the development server:
+   ```bash
+   npm run dev
+   ```
+6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Features to Implement
+## Next Phases
 
-*   **Campaign Dashboard**: View active group buying campaigns and their progress (e.g., "50/100 ordered").
-*   **Product Pages**: Detailed views of clothing items with size and color selections.
-*   **User Accounts**: Login to track joined campaigns and order history.
-*   **Checkout Process**: Secure payment flow once a campaign reaches its goal.
+- Full implementation of NextAuth (Google/Email authentication).
+- Integration of a real payment portal (e.g., Stripe) to handle campaign funding.

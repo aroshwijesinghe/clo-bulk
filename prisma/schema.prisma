@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Campaign {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  imageUrl    String?
+  price       Float
+  targetCount Int
+  currentCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  endDate     DateTime
+  orders      Order[]
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  campaignId  String
+  userId      String   // Placeholder for Auth implementation later
+  quantity    Int      @default(1)
+  size        String?
+  color       String?
+  createdAt   DateTime @default(now())
+  campaign    Campaign @relation(fields: [campaignId], references: [id])
+}
