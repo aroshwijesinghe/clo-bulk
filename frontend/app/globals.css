@@ -1,10 +1,9 @@
+@import "tailwindcss";
 /* ============================================================
    BulkThreads — Design System
    Rare colour palette: Obsidian + Electric Violet + Neon Citrine
    Dark & Light mode supported via data-theme attribute
    ============================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 /* ── DARK MODE (default) ───────────────────────────────────── */
 :root,
