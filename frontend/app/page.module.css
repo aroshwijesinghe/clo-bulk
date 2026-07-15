@@ -145,9 +145,21 @@
 }
 
 @media (max-width: 600px) {
-  .hero { padding-top: 6rem; }
-  .heroStats { gap: 1.25rem; }
+  .hero { padding: 6rem 0 4rem; }
+  .heroStats { gap: 1rem; justify-content: center; flex-wrap: wrap; }
   .heroStatNum { font-size: 1.4rem; }
   .grid { grid-template-columns: 1fr; }
   .sectionHeader { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .heroActions { justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .heroTitle { font-size: 2.25rem; }
+  .heroSubtitle { font-size: 1rem; text-align: center; }
+  .heroContent { text-align: center; }
+  .heroBadge { margin: 0 auto 1.5rem; }
+  .heroStats { flex-direction: column; gap: 1.5rem; text-align: center; }
+  .heroStatDivider { width: 40px; height: 1px; }
+  .heroActions { flex-direction: column; width: 100%; }
+  .heroActions a { width: 100%; justify-content: center; }
 }

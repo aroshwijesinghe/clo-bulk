@@ -7,7 +7,7 @@ import { useTheme } from '@/components/ThemeProvider/ThemeProvider';
 import styles from './settings.module.css';
 
 export default function SettingsPage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [notifications, setNotifications] = useState({
@@ -18,8 +18,34 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (!user) router.push('/auth');
-  }, [user]);
+    if (!authLoading && !user) router.push('/auth');
+  }, [user, authLoading]);
+
+  // Load notifications from local storage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('bt_notifications');
+      if (stored) {
+        try {
+          setNotifications(JSON.parse(stored));
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+  }, []);
+
+  const handleToggle = (key) => {
+    setNotifications((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem('bt_notifications', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  if (authLoading || !user) {
+    return <div className={styles.page}><div className="container"><div className="skeleton" style={{ height: 400, borderRadius: 20 }} /></div></div>;
+  }
 
   return (
     <div className={styles.page}>
@@ -61,7 +87,7 @@ export default function SettingsPage() {
                   </div>
                   <button
                     className={`${styles.toggle} ${notifications[key] ? styles.toggleOn : ''}`}
-                    onClick={() => setNotifications((n) => ({ ...n, [key]: !n[key] }))}
+                    onClick={() => handleToggle(key)}
                     aria-checked={notifications[key]}
                     role="switch"
                   >
@@ -81,7 +107,11 @@ export default function SettingsPage() {
                   <p className={styles.settingLabel}>Email Address</p>
                   <p className={styles.settingDesc}>{user?.email}</p>
                 </div>
-                <span className={styles.badge}>Verified</span>
+                {user?.email_confirmed_at ? (
+                  <span className={styles.badge}>Verified</span>
+                ) : (
+                  <span className={`${styles.badge} ${styles.badgeUnverified}`} style={{ background: 'var(--warning-muted)', color: 'var(--warning)' }}>Unverified</span>
+                )}
               </div>
               <div className={styles.settingRow}>
                 <div>

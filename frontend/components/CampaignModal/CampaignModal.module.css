@@ -282,3 +282,22 @@
   transition: all 0.2s;
 }
 .viewOrdersBtn:hover { background: rgba(124, 58, 237, 0.2); }
+
+@media (max-width: 600px) {
+  .overlay { padding: 1rem; align-items: flex-end; }
+  .modal { max-height: 95vh; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .imageWrap { height: 200px; }
+  .imagePrice { font-size: 1.5rem; bottom: 12px; left: 16px; }
+  .body { padding: 1.25rem; gap: 1.25rem; }
+  .title { font-size: 1.25rem; }
+  .description { font-size: 0.85rem; }
+  .sizes { gap: 0.4rem; }
+  .sizeBtn { width: 38px; height: 38px; font-size: 0.75rem; }
+  .qtyRow { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .imageWrap { height: 180px; }
+  .body { padding: 1rem; }
+  .carouselArrow { width: 28px; height: 28px; }
+}

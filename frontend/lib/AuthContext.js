@@ -28,13 +28,40 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    const fetchRole = async (userId) => {
+      if (!userId) {
+        setIsAdmin(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('Profile')
+          .select('role')
+          .eq('id', userId)
+          .single();
+        
+        if (!error && data) {
+          setIsAdmin(data.role === 'admin');
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (err) {
+        setIsAdmin(false);
+      }
+    };
+
     // Get current session (reads JWT from localStorage)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (session?.user) {
+        fetchRole(session.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
     });
 
     // Listen for auth state changes (login, logout, token refresh)
@@ -42,7 +69,11 @@ export function AuthProvider({ children }) {
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        if (session?.user) {
+          fetchRole(session.user.id).finally(() => setLoading(false));
+        } else {
+          setLoading(false);
+        }
       }
     );
 
@@ -52,8 +83,6 @@ export function AuthProvider({ children }) {
   const signOut = async () => {
     await supabase.auth.signOut();
   };
-
-  const isAdmin = user?.email === 'admin@example.com';
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signOut, isAdmin }}>

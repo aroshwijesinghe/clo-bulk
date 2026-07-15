@@ -1,7 +1,11 @@
+'use client';
 import Link from 'next/link';
+import { useAuth } from '@/lib/AuthContext';
 import styles from './Footer.module.css';
 
 export default function Footer() {
+  const { user } = useAuth();
+
   return (
     <footer className={styles.footer}>
       <div className="container">
@@ -20,17 +24,20 @@ export default function Footer() {
               <Link href="/campaigns/create" className={styles.link}>Start a Campaign</Link>
               <Link href="/#how-it-works" className={styles.link}>How It Works</Link>
             </div>
-            <div className={styles.linkGroup}>
-              <p className={styles.groupTitle}>Account</p>
-              <Link href="/profile" className={styles.link}>Profile</Link>
-              <Link href="/orders" className={styles.link}>My Orders</Link>
-              <Link href="/settings" className={styles.link}>Settings</Link>
-            </div>
-            <div className={styles.linkGroup}>
-              <p className={styles.groupTitle}>Info</p>
-              <Link href="/auth" className={styles.link}>Sign In</Link>
-              <Link href="/auth?mode=signup" className={styles.link}>Create Account</Link>
-            </div>
+            {user ? (
+              <div className={styles.linkGroup}>
+                <p className={styles.groupTitle}>Account</p>
+                <Link href="/profile" className={styles.link}>Profile</Link>
+                <Link href="/orders" className={styles.link}>My Orders</Link>
+                <Link href="/settings" className={styles.link}>Settings</Link>
+              </div>
+            ) : (
+              <div className={styles.linkGroup}>
+                <p className={styles.groupTitle}>Info</p>
+                <Link href="/auth" className={styles.link}>Sign In</Link>
+                <Link href="/auth?mode=signup" className={styles.link}>Create Account</Link>
+              </div>
+            )}
           </div>
         </div>
         <div className={styles.bottom}>

@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/AuthContext';
 import styles from './profile.module.css';
 
 export default function ProfilePage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState({ displayName: '', bio: '', phone: '', address: '' });
   const [loading, setLoading] = useState(true);
@@ -15,9 +15,9 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (!user) { router.push('/auth'); return; }
-    fetchProfile();
-  }, [user]);
+    if (!authLoading && !user) { router.push('/auth'); return; }
+    if (user) fetchProfile();
+  }, [user, authLoading]);
 
   async function fetchProfile() {
     const { data } = await supabase
@@ -41,7 +41,7 @@ export default function ProfilePage() {
 
   const initial = (profile.displayName || user?.email || '?')[0].toUpperCase();
 
-  if (loading) return <div className={styles.loadingPage}><div className="skeleton" style={{ width: 200, height: 200, borderRadius: '50%', margin: '0 auto' }} /></div>;
+  if (authLoading || loading) return <div className={styles.loadingPage}><div className="skeleton" style={{ width: 200, height: 200, borderRadius: '50%', margin: '0 auto' }} /></div>;
 
   return (
     <div className={styles.page}>

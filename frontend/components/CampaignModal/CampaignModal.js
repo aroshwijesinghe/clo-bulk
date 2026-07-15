@@ -61,6 +61,16 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
     return () => clearInterval(interval);
   }, [images.length]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose?.();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleJoin = async () => {
     if (!user) { router.push('/auth'); return; }
     if (quantity > remaining) {
@@ -79,11 +89,20 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
     if (error) {
       setError(error.message);
     } else {
-      // Update currentCount
+      // Fetch latest count to minimize race condition window
+      const { data: latest } = await supabase
+        .from('Campaign')
+        .select('currentCount')
+        .eq('id', campaign.id)
+        .single();
+      
+      const newCount = (latest?.currentCount || campaign.currentCount) + quantity;
+      
       await supabase
         .from('Campaign')
-        .update({ currentCount: campaign.currentCount + quantity })
+        .update({ currentCount: newCount })
         .eq('id', campaign.id);
+        
       setSuccess(true);
       onOrderPlaced?.();
     }
@@ -96,10 +115,12 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e) => e.target === e.currentTarget && onClose?.()}
     >
       <motion.div
         className={styles.modal}
+        role="dialog"
+        aria-modal="true"
         initial={{ opacity: 0, y: 40, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 24, scale: 0.97 }}
@@ -141,7 +162,7 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
             </>
           ) : (
             <div className={styles.imageFallback}>
-              <span>{campaign.title[0]}</span>
+              <span>{campaign.title?.charAt(0) || '?'}</span>
             </div>
           )}
           <div className={styles.imageOverlay} />
@@ -199,7 +220,7 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
                 <div className={styles.qtyRow}>
                   <button className={styles.qtyBtn} onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
                   <span className={styles.qtyNum}>{quantity}</span>
-                  <button className={styles.qtyBtn} onClick={() => setQuantity(Math.min(remaining, quantity + 1))}>+</button>
+                  <button className={styles.qtyBtn} onClick={() => setQuantity(Math.max(1, Math.min(remaining, quantity + 1)))} disabled={quantity >= remaining}>+</button>
                   <span className={styles.qtyTotal}>= ${(campaign.price * quantity).toFixed(2)}</span>
                 </div>
               </div>

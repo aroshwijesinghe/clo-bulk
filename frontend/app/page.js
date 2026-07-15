@@ -9,6 +9,9 @@ import CampaignModal from '@/components/CampaignModal/CampaignModal';
 import { AnimatePresence } from 'framer-motion';
 import styles from './page.module.css';
 
+// Antigravity Components
+import GlassCard from '@/components/GlassCard';
+
 export default function HomePage() {
   const [campaigns, setCampaigns] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -65,22 +68,24 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className={styles.heroStats}>
-              <div className={styles.heroStat}>
-                <span className={styles.heroStatNum}>{campaigns.length > 0 ? `${campaigns.length}+` : '—'}</span>
-                <span className={styles.heroStatLabel}>Active Campaigns</span>
+            <GlassCard className="mt-12 p-6 max-w-3xl mx-auto backdrop-blur-md bg-white/5 border-white/10" tilt float={true}>
+              <div className={styles.heroStats}>
+                <div className={styles.heroStat}>
+                  <span className={styles.heroStatNum}>{campaigns.length > 0 ? `${campaigns.length}+` : '—'}</span>
+                  <span className={styles.heroStatLabel}>Active Campaigns</span>
+                </div>
+                <div className={styles.heroStatDivider} />
+                <div className={styles.heroStat}>
+                  <span className={styles.heroStatNum}>40%</span>
+                  <span className={styles.heroStatLabel}>Avg. Savings</span>
+                </div>
+                <div className={styles.heroStatDivider} />
+                <div className={styles.heroStat}>
+                  <span className={styles.heroStatNum}>100%</span>
+                  <span className={styles.heroStatLabel}>Satisfaction</span>
+                </div>
               </div>
-              <div className={styles.heroStatDivider} />
-              <div className={styles.heroStat}>
-                <span className={styles.heroStatNum}>40%</span>
-                <span className={styles.heroStatLabel}>Avg. Savings</span>
-              </div>
-              <div className={styles.heroStatDivider} />
-              <div className={styles.heroStat}>
-                <span className={styles.heroStatNum}>100%</span>
-                <span className={styles.heroStatLabel}>Satisfaction</span>
-              </div>
-            </div>
+            </GlassCard>
           </motion.div>
         </div>
       </section>
@@ -116,8 +121,11 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.5 }}
+                  className="h-full"
                 >
-                  <CampaignCard campaign={c} onClick={() => setSelected(c)} />
+                  <GlassCard tilt className="h-full">
+                    <CampaignCard campaign={c} onClick={() => setSelected(c)} />
+                  </GlassCard>
                 </motion.div>
               ))}
             </div>

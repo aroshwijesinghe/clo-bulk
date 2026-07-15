@@ -61,7 +61,8 @@
 .textarea { resize: vertical; min-height: 110px; }
 
 /* Input date color fix */
-.input[type="date"] { color-scheme: dark; }
+:global([data-theme="dark"]) .input[type="date"] { color-scheme: dark; }
+:global([data-theme="light"]) .input[type="date"] { color-scheme: light; }
 
 /* Preview */
 .preview {

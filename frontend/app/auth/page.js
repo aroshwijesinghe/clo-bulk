@@ -13,8 +13,8 @@ function AuthForm() {
   const { user } = useAuth();
 
   const [mode, setMode] = useState(searchParams.get('mode') === 'signup' ? 'signup' : 'login');
-  const [email, setEmail] = useState('developer@example.com');
-  const [password, setPassword] = useState('developer123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -77,27 +77,6 @@ function AuthForm() {
       
       setError(msg);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const quickLogin = async (e, p) => {
-    setLoading(true);
-    setError('');
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email: e, password: p });
-      if (error) throw error;
-      
-      // Log the login to LoginHistory table
-      try {
-        await supabase.from('LoginHistory').insert([{ email: e, login_time: new Date().toISOString() }]);
-      } catch (err) {
-        console.warn('Could not save login history. Table might not exist.', err);
-      }
-
-      router.push('/campaigns');
-    } catch (err) {
-      setError(err.message || 'Something went wrong');
       setLoading(false);
     }
   };
@@ -290,25 +269,6 @@ function AuthForm() {
           </p>
         )}
       </motion.div>
-
-      {/* DEV QUICK LOGIN */}
-      <div style={{ position: 'fixed', bottom: 20, right: 20, padding: 16, background: 'var(--bg)', border: '1px solid var(--accent)', borderRadius: 8, zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-        <p style={{ fontSize: '0.8rem', marginBottom: 8, opacity: 0.7 }}>Dev Quick Login</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-           <button onClick={() => quickLogin('admin@example.com', 'admin123')} style={{ fontSize: '0.8rem', padding: '6px 12px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', textAlign: 'left' }}>
-             Admin (admin@example.com)<br />
-             <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>PW: admin123</span>
-           </button>
-           <button onClick={() => quickLogin('user@example.com', 'user123')} style={{ fontSize: '0.8rem', padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: 4, cursor: 'pointer', textAlign: 'left' }}>
-             User (user@example.com)<br />
-             <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>PW: user123</span>
-           </button>
-           <button onClick={() => quickLogin('developers11@gmail.com', 'password123')} style={{ fontSize: '0.8rem', padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: 4, cursor: 'pointer', textAlign: 'left' }}>
-             Developer (developers11@gmail.com)<br />
-             <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>PW: password123</span>
-           </button>
-        </div>
-      </div>
     </div>
   );
 }
