@@ -30,6 +30,17 @@ export default function Navbar() {
     setMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
   const userInitial = user?.email?.[0]?.toUpperCase() ?? '?';
 
   return (

@@ -4,9 +4,24 @@ import React, { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
-export default function GlassCard({ children, className = "", tilt = false }) {
+export default function GlassCard({ children, className = "", tilt = false, float = false }) {
   const cardRef = useRef(null);
   const [hovered, setHovered] = useState(false);
+
+  useGSAP(() => {
+    if (!cardRef.current || !float) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    gsap.to(cardRef.current, {
+      y: "-=8",
+      duration: 2.5,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut",
+      delay: Math.random() * 0.5,
+    });
+  }, { scope: cardRef, dependencies: [float] });
 
   const handleMouseMove = (e) => {
     if (!tilt || !cardRef.current) return;

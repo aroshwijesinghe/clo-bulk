@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/AuthContext';
 import styles from './create.module.css';
 
 export default function CreateCampaignPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -21,6 +21,10 @@ export default function CreateCampaignPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [files, setFiles] = useState([]);
+
+  if (authLoading) {
+    return <div className={styles.page}><div className="container"><div className="skeleton" style={{ height: 400, borderRadius: 20 }} /></div></div>;
+  }
 
   if (!user) {
     return (

@@ -11,7 +11,6 @@ import styles from './page.module.css';
 
 // Antigravity Components
 import GlassCard from '@/components/GlassCard';
-import IsometricGrid from '@/components/IsometricGrid';
 
 export default function HomePage() {
   const [campaigns, setCampaigns] = useState([]);
@@ -69,7 +68,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <GlassCard className="mt-12 p-6 max-w-3xl mx-auto backdrop-blur-md bg-white/5 border-white/10" tilt>
+            <GlassCard className="mt-12 p-6 max-w-3xl mx-auto backdrop-blur-md bg-white/5 border-white/10" tilt float={true}>
               <div className={styles.heroStats}>
                 <div className={styles.heroStat}>
                   <span className={styles.heroStatNum}>{campaigns.length > 0 ? `${campaigns.length}+` : '—'}</span>
@@ -114,11 +113,22 @@ export default function HomePage() {
               ))}
             </div>
           ) : campaigns.length > 0 ? (
-            <IsometricGrid items={campaigns.slice(0, 3).map((c) => (
-              <GlassCard key={c.id} tilt className="h-full w-full">
-                <CampaignCard campaign={c} onClick={() => setSelected(c)} />
-              </GlassCard>
-            ))} />
+            <div className={styles.grid}>
+              {campaigns.slice(0, 3).map((c, i) => (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.5 }}
+                  className="h-full"
+                >
+                  <GlassCard tilt className="h-full">
+                    <CampaignCard campaign={c} onClick={() => setSelected(c)} />
+                  </GlassCard>
+                </motion.div>
+              ))}
+            </div>
           ) : (
             <div className={styles.emptyCampaigns}>
               <p>No active campaigns yet.</p>

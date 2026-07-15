@@ -16,15 +16,15 @@ const STATUS_COLOR = {
 };
 
 export default function OrdersPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) { router.push('/auth'); return; }
-    fetchOrders();
-  }, [user]);
+    if (!authLoading && !user) { router.push('/auth'); return; }
+    if (user) fetchOrders();
+  }, [user, authLoading]);
 
   async function fetchOrders() {
     const { data } = await supabase
@@ -36,7 +36,7 @@ export default function OrdersPage() {
     setLoading(false);
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className={styles.page}>
         <div className="container">
