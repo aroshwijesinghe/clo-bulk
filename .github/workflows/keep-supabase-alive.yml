@@ -1,0 +1,51 @@
+name: Keep Supabase Alive
+
+# Runs every 6 days to prevent Supabase free-tier project from pausing
+on:
+  schedule:
+    # At 00:00 UTC on every 6th day (1st, 7th, 13th, 19th, 25th of each month)
+    - cron: '0 0 */6 * *'
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase to keep it alive
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "🏓 Pinging Supabase at $(date -u)..."
+
+          # Insert a keepalive record into LoginHistory
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/LoginHistory" \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation" \
+            -d '{"email": "keepalive@github-actions.bot"}')
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "Response code: $HTTP_CODE"
+          echo "Response body: $BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Supabase is alive! Keepalive record inserted."
+          else
+            echo "❌ Failed to ping Supabase (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+          # Clean up old keepalive records (keep only the latest one)
+          echo "🧹 Cleaning up old keepalive records..."
+          curl -s -o /dev/null \
+            "${SUPABASE_URL}/rest/v1/LoginHistory?email=eq.keepalive@github-actions.bot&order=login_time.desc&offset=1" \
+            -X DELETE \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}"
+
+          echo "🎉 Done! Supabase project will stay active."
