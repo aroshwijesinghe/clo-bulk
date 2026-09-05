@@ -18,9 +18,15 @@ jobs:
         run: |
           echo "🏓 Pinging Supabase at $(date -u)..."
 
+          # Normalize URL (strip trailing slash and add protocol if missing)
+          SUPABASE_BASE_URL="${SUPABASE_URL%/}"
+          if [[ "$SUPABASE_BASE_URL" != http://* && "$SUPABASE_BASE_URL" != https://* ]]; then
+            SUPABASE_BASE_URL="https://${SUPABASE_BASE_URL}"
+          fi
+
           # Insert a keepalive record into LoginHistory
-          RESPONSE=$(curl -s -w "\n%{http_code}" \
-            "${SUPABASE_URL}/rest/v1/LoginHistory" \
+          RESPONSE=$(curl -sS --retry 3 --retry-delay 2 --retry-all-errors -w "\n%{http_code}" \
+            "${SUPABASE_BASE_URL}/rest/v1/LoginHistory" \
             -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Content-Type: application/json" \
@@ -40,10 +46,10 @@ jobs:
             exit 1
           fi
 
-          # Clean up old keepalive records (keep only the latest one)
+          # Clean up old keepalive records (keep only the latest 3)
           echo "🧹 Cleaning up old keepalive records..."
-          curl -s -o /dev/null \
-            "${SUPABASE_URL}/rest/v1/LoginHistory?email=eq.keepalive@github-actions.bot&order=login_time.desc&offset=1" \
+          curl -sS --retry 3 --retry-delay 2 --retry-all-errors -o /dev/null \
+            "${SUPABASE_BASE_URL}/rest/v1/LoginHistory?email=eq.keepalive@github-actions.bot&order=login_time.desc&offset=3" \
             -X DELETE \
             -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}"
