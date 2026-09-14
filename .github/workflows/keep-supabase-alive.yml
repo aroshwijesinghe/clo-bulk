@@ -1,10 +1,10 @@
 name: Keep Supabase Alive
 
-# Runs every 6 days to prevent Supabase free-tier project from pausing
+# Runs every 3 days to prevent Supabase free-tier project from pausing
 on:
   schedule:
-    # At 00:00 UTC on every 6th day (1st, 7th, 13th, 19th, 25th of each month)
-    - cron: '0 0 */6 * *'
+    # Run every 3 days at 04:00 UTC (avoids midnight contention and guarantees activity well before 7-day cutoff)
+    - cron: '0 4 */3 * *'
   workflow_dispatch: # Allow manual trigger for testing
 
 jobs:
@@ -24,14 +24,20 @@ jobs:
             SUPABASE_BASE_URL="https://${SUPABASE_BASE_URL}"
           fi
 
-          # Insert a keepalive record into LoginHistory
+          echo "1️⃣ Querying database..."
+          curl -sS --retry 3 --retry-delay 2 --retry-all-errors \
+            "${SUPABASE_BASE_URL}/rest/v1/Campaign?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" > /dev/null
+
+          echo "2️⃣ Inserting keepalive record..."
           RESPONSE=$(curl -sS --retry 3 --retry-delay 2 --retry-all-errors -w "\n%{http_code}" \
             "${SUPABASE_BASE_URL}/rest/v1/LoginHistory" \
             -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Content-Type: application/json" \
             -H "Prefer: return=representation" \
-            -d '{"email": "keepalive@github-actions.bot"}')
+            -d "{\"email\": \"keepalive@github-actions.bot\"}")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
@@ -46,8 +52,7 @@ jobs:
             exit 1
           fi
 
-          # Clean up old keepalive records (keep only the latest 3)
-          echo "🧹 Cleaning up old keepalive records..."
+          echo "3️⃣ Cleaning up old keepalive records..."
           curl -sS --retry 3 --retry-delay 2 --retry-all-errors -o /dev/null \
             "${SUPABASE_BASE_URL}/rest/v1/LoginHistory?email=eq.keepalive@github-actions.bot&order=login_time.desc&offset=3" \
             -X DELETE \
