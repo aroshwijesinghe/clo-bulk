@@ -456,39 +456,6 @@
   transform: scale(0.9);
 }
 
-/* SOCIAL CIRCLES */
-.social {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.social button {
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: var(--neu-shadow-raised-xs);
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.social button:hover {
-  background: var(--accent);
-  color: white;
-  transform: translateY(-3px);
-  box-shadow: var(--neu-shadow-glow);
-}
-
 /* MESSAGES */
 .errorMsg {
   font-size: 12px;

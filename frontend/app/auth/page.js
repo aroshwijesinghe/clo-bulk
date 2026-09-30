@@ -58,10 +58,41 @@ function AuthForm() {
     setError('');
     setMessage('');
     try {
+      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/campaigns` : undefined;
+      
+      // 1. Preflight check Supabase auth settings to verify Google provider status
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lafrwgoojoqijimsixsz.supabase.co';
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseAnonKey) {
+        try {
+          const settingsRes = await fetch(`${supabaseUrl}/auth/v1/settings`, {
+            headers: {
+              apikey: supabaseAnonKey,
+              Authorization: `Bearer ${supabaseAnonKey}`,
+            },
+          });
+          if (settingsRes.ok) {
+            const settings = await settingsRes.json();
+            if (settings?.external && settings.external.google === false) {
+              throw new Error(
+                'Google sign-in is not enabled yet in your Supabase project (lafrwgoojoqijimsixsz). Please enable Google in Supabase Dashboard (Authentication > Providers > Google).'
+              );
+            }
+          }
+        } catch (checkErr) {
+          if (checkErr.message?.includes('not enabled')) {
+            throw checkErr;
+          }
+          // If network error during settings check, proceed to signInWithOAuth
+        }
+      }
+
+      // 2. Perform OAuth sign in
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/campaigns` : undefined,
+          redirectTo: redirectUrl,
         },
       });
       if (error) throw error;
@@ -417,33 +448,6 @@ function AuthForm() {
                     +
                   </button>
                 </div>
-
-                <div className={styles.social}>
-                  <button
-                    type="button"
-                    onClick={handleGoogle}
-                    title="Sign in with Google"
-                    aria-label="Google"
-                  >
-                    G
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    title="Facebook"
-                    aria-label="Facebook"
-                  >
-                    f
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    title="LinkedIn"
-                    aria-label="LinkedIn"
-                  >
-                    in
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -565,33 +569,6 @@ function AuthForm() {
                     title="Login"
                   >
                     ←
-                  </button>
-                </div>
-
-                <div className={styles.social}>
-                  <button
-                    type="button"
-                    onClick={handleGoogle}
-                    title="Sign up with Google"
-                    aria-label="Google"
-                  >
-                    G
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    title="Facebook"
-                    aria-label="Facebook"
-                  >
-                    f
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    title="LinkedIn"
-                    aria-label="LinkedIn"
-                  >
-                    in
                   </button>
                 </div>
               </div>
