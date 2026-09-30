@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import CampaignCard from '@/components/CampaignCard/CampaignCard';
 import CampaignModal from '@/components/CampaignModal/CampaignModal';
+import { Search, Inbox } from 'lucide-react';
 import styles from './campaigns.module.css';
 
 const FILTERS = ['All', 'Active', 'Almost Full', 'Completed'];
@@ -113,7 +114,9 @@ export default function CampaignsPage() {
         {/* Controls */}
         <div className={styles.controls}>
           <div className={styles.searchWrap}>
-            <span className={styles.searchIcon}>🔍</span>
+            <span className={styles.searchIcon}>
+              <Search size={16} />
+            </span>
             <input
               type="search"
               className={styles.search}
@@ -155,7 +158,9 @@ export default function CampaignsPage() {
         ) : filtered.length === 0 ? (
           <motion.div className={styles.empty}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <span className={styles.emptyIcon}>🎯</span>
+            <span className={styles.emptyIcon}>
+              <Inbox size={42} strokeWidth={1.5} />
+            </span>
             <h3>No campaigns found</h3>
             <p>Try a different filter or <button onClick={() => router.push('/campaigns/create')} className={styles.emptyAction}>start one yourself</button></p>
           </motion.div>

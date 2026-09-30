@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
+import { X, Sparkles, CheckCircle2 } from 'lucide-react';
 import styles from './CampaignModal.module.css';
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -126,7 +127,9 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
         exit={{ opacity: 0, y: 24, scale: 0.97 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       >
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
+          <X size={18} />
+        </button>
 
         {/* Image */}
         <div className={styles.imageWrap} style={{ position: 'relative', overflow: 'hidden' }}>
@@ -180,7 +183,7 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
           <div className={styles.progressSection}>
             <div className={styles.progressHeader}>
               <span>{campaign.currentCount} joined</span>
-              <span>{remaining > 0 ? `${remaining} spots left` : '🎉 Goal reached!'}</span>
+              <span>{remaining > 0 ? `${remaining} spots left` : <><CheckCircle2 size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Goal reached!</>}</span>
             </div>
             <div className={styles.progressTrack}>
               <motion.div
@@ -251,7 +254,9 @@ export default function CampaignModal({ campaign, onClose, onOrderPlaced }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
             >
-              <span className={styles.successIcon}>🎉</span>
+              <span className={styles.successIcon}>
+                <Sparkles size={40} color="var(--accent)" />
+              </span>
               <h3>You're In!</h3>
               <p>Your order for {quantity}× {campaign.title} (Size {size}) has been placed.</p>
               <button className={styles.viewOrdersBtn} onClick={() => router.push('/orders')}>

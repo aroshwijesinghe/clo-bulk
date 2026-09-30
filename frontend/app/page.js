@@ -7,6 +7,7 @@ import CampaignCard from '@/components/CampaignCard/CampaignCard';
 import HowItWorks from '@/components/HowItWorks/HowItWorks';
 import CampaignModal from '@/components/CampaignModal/CampaignModal';
 import { AnimatePresence } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 import styles from './page.module.css';
 
 // Antigravity Components
@@ -45,7 +46,8 @@ export default function HomePage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
             >
-              ✦ Group Buying, Reimagined
+              <Sparkles size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: 'var(--accent)' }} />
+              Group Buying, Reimagined
             </motion.div>
 
             <h1 className={styles.heroTitle}>

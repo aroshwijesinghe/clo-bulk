@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { Lock, Eye, Rocket } from 'lucide-react';
 import styles from './create.module.css';
 
 export default function CreateCampaignPage() {
@@ -30,7 +31,9 @@ export default function CreateCampaignPage() {
     return (
       <div className={styles.gateWrap}>
         <div className={styles.gate}>
-          <span className={styles.gateIcon}>🔒</span>
+          <span className={styles.gateIcon}>
+            <Lock size={36} color="var(--accent)" strokeWidth={2.2} />
+          </span>
           <h2>Sign in to Start a Campaign</h2>
           <p>Create a bulk order campaign and gather people to unlock wholesale prices.</p>
           <button className="btn-primary" onClick={() => router.push('/auth')}>
@@ -258,7 +261,10 @@ export default function CreateCampaignPage() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
               >
-                <p className={styles.previewLabel}>📦 Campaign Preview</p>
+                <p className={styles.previewLabel}>
+                  <Eye size={15} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 5 }} />
+                  Campaign Preview
+                </p>
                 <p className={styles.previewTitle}>{form.title}</p>
                 <p className={styles.previewMeta}>
                   ${parseFloat(form.price || 0).toFixed(2)} / unit · Target: {form.targetCount} units
@@ -273,7 +279,14 @@ export default function CreateCampaignPage() {
                 Cancel
               </button>
               <button type="submit" className={styles.submitBtn} disabled={loading}>
-                {loading ? <span className={styles.spinner} /> : '🚀 Launch Campaign'}
+                {loading ? (
+                  <span className={styles.spinner} />
+                ) : (
+                  <>
+                    <Rocket size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
+                    Launch Campaign
+                  </>
+                )}
               </button>
             </div>
           </form>

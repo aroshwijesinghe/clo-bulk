@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import { useTheme } from '@/components/ThemeProvider/ThemeProvider';
+import { Sun, Moon } from 'lucide-react';
 import styles from './settings.module.css';
 
 export default function SettingsPage() {
@@ -65,7 +66,7 @@ export default function SettingsPage() {
                 <p className={styles.settingDesc}>Currently using {theme} mode</p>
               </div>
               <button className={styles.themeToggle} onClick={toggleTheme}>
-                <span className={styles.themeIcon}>{theme === 'dark' ? '🌙' : '☀️'}</span>
+                <span className={styles.themeIcon}>{theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}</span>
                 <span className={styles.themeLabel}>{theme === 'dark' ? 'Dark' : 'Light'}</span>
               </button>
             </div>

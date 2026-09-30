@@ -3,6 +3,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { Lock, Sparkles, Mail, KeyRound, Eye, EyeOff } from 'lucide-react';
 import styles from './auth.module.css';
 
 function AuthForm() {
@@ -121,7 +122,7 @@ function AuthForm() {
         console.warn('Could not save login history.', err);
       }
 
-      setMessage('✓ Logged in successfully!');
+      setMessage('Logged in successfully!');
       setTimeout(() => router.push('/campaigns'), 600);
     } catch (err) {
       setError(err?.message || 'Login failed. Please check your credentials.');
@@ -261,7 +262,11 @@ function AuthForm() {
         {specialMode ? (
           <div className={`${styles.formPanel}`} style={{ position: 'relative', width: '100%', minHeight: '520px' }}>
             <div className={styles.logo}>
-              {specialMode === 'verify' ? '✉️' : '🔑'}
+              {specialMode === 'verify' ? (
+                <Mail size={32} color="var(--accent)" strokeWidth={2.2} />
+              ) : (
+                <KeyRound size={32} color="var(--accent)" strokeWidth={2.2} />
+              )}
             </div>
             <h1 className={styles.title}>
               {specialMode === 'verify' ? 'Verify Email' : 'Reset Password'}
@@ -306,7 +311,7 @@ function AuthForm() {
                     onClick={() => setShowLoginPassword(!showLoginPassword)}
                     aria-label="Toggle password visibility"
                   >
-                    {showLoginPassword ? '🙈' : '👁'}
+                    {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               )}
@@ -340,7 +345,7 @@ function AuthForm() {
             <div className={`${styles.formPanel} ${styles.loginPanel}`}>
               <div>
                 <div className={styles.logo} title="BulkThreads Security">
-                  🔐
+                  <Lock size={32} color="var(--accent)" strokeWidth={2.2} />
                 </div>
                 <h1 className={styles.title}>Welcome</h1>
                 <p className={styles.subtitle}>Login to continue your journey</p>
@@ -405,7 +410,7 @@ function AuthForm() {
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
                       aria-label="Toggle password visibility"
                     >
-                      {showLoginPassword ? '🙈' : '👁'}
+                      {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
 
@@ -455,7 +460,7 @@ function AuthForm() {
             <div className={`${styles.formPanel} ${styles.signupPanel}`}>
               <div>
                 <div className={styles.logo} title="Create BulkThreads Account">
-                  ✨
+                  <Sparkles size={32} color="var(--accent)" strokeWidth={2.2} />
                 </div>
                 <h1 className={styles.title}>Create Account</h1>
                 <p className={styles.subtitle}>Start your journey with us</p>
@@ -534,7 +539,7 @@ function AuthForm() {
                       onClick={() => setShowSignupPassword(!showSignupPassword)}
                       aria-label="Toggle password visibility"
                     >
-                      {showSignupPassword ? '🙈' : '👁'}
+                      {showSignupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
 

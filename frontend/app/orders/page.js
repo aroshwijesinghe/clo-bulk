@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { Package, ShoppingBag } from 'lucide-react';
 import styles from './orders.module.css';
 
 const STATUS_COLOR = {
@@ -62,7 +63,9 @@ export default function OrdersPage() {
 
           {orders.length === 0 ? (
             <div className={styles.empty}>
-              <span className={styles.emptyIcon}>📦</span>
+              <span className={styles.emptyIcon}>
+                <Package size={44} strokeWidth={1.5} />
+              </span>
               <h3>No Orders Yet</h3>
               <p>Join a bulk order campaign to see your orders here.</p>
               <Link href="/campaigns" className="btn-primary" style={{ marginTop: '1rem' }}>
@@ -72,7 +75,7 @@ export default function OrdersPage() {
           ) : (
             <div className={styles.list}>
               {orders.map((order, i) => {
-                const sc = STATUS_COLOR[order.status] || STATUS_COLOR.pending;
+                 const sc = STATUS_COLOR[order.status] || STATUS_COLOR.pending;
                 return (
                   <motion.div
                     key={order.id}
@@ -82,7 +85,9 @@ export default function OrdersPage() {
                     transition={{ delay: i * 0.05, duration: 0.4 }}
                   >
                     <div className={styles.rowLeft}>
-                      <div className={styles.rowIcon}>🧺</div>
+                      <div className={styles.rowIcon}>
+                        <ShoppingBag size={20} color="var(--accent)" />
+                      </div>
                       <div>
                         <p className={styles.rowTitle}>{order.Campaign?.title}</p>
                         <p className={styles.rowMeta}>

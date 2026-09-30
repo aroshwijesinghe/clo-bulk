@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { Check } from 'lucide-react';
 import styles from './profile.module.css';
 
 export default function ProfilePage() {
@@ -81,7 +82,16 @@ export default function ProfilePage() {
               </div>
               <div className={styles.formActions}>
                 <button type="submit" className={styles.saveBtn} disabled={saving}>
-                  {saving ? '...' : saved ? '✓ Saved!' : 'Save Changes'}
+                  {saving ? (
+                    'Saving...'
+                  ) : saved ? (
+                    <>
+                      <Check size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 5 }} />
+                      Saved!
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </div>
             </form>

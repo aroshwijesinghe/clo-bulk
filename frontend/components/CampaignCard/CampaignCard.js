@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, Flame, Users, Clock } from 'lucide-react';
 import styles from './CampaignCard.module.css';
 
 // Map campaign titles to local product images
@@ -90,8 +91,16 @@ export default function CampaignCard({ campaign, onClick }) {
         <div className={styles.imageOverlay} />
 
         {/* Badges */}
-        {isFull && <span className={`${styles.badge} ${styles.badgeFull}`}>✅ Goal Reached</span>}
-        {isAlmostFull && <span className={`${styles.badge} ${styles.badgeHot}`}>🔥 Almost Full</span>}
+        {isFull && (
+          <span className={`${styles.badge} ${styles.badgeFull}`}>
+            <CheckCircle2 size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Goal Reached
+          </span>
+        )}
+        {isAlmostFull && (
+          <span className={`${styles.badge} ${styles.badgeHot}`}>
+            <Flame size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Almost Full
+          </span>
+        )}
 
         {/* Price chip */}
         <span className={styles.priceChip}>${campaign.price.toFixed(2)}</span>
@@ -104,10 +113,12 @@ export default function CampaignCard({ campaign, onClick }) {
 
         <div className={styles.meta}>
           <span className={styles.metaItem}>
-            👥 {campaign.currentCount}/{campaign.targetCount}
+            <Users size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 5 }} />
+            {campaign.currentCount}/{campaign.targetCount}
           </span>
           <span className={styles.metaItem}>
-            ⏱ {daysLeft > 0 ? `${daysLeft}d left` : 'Ended'}
+            <Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 5 }} />
+            {daysLeft > 0 ? `${daysLeft}d left` : 'Ended'}
           </span>
         </div>
 

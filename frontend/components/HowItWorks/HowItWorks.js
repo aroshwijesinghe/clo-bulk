@@ -1,5 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
+import { Search, Users, Target, PackageCheck } from 'lucide-react';
 import styles from './HowItWorks.module.css';
 
 const steps = [
@@ -7,25 +8,25 @@ const steps = [
     number: '01',
     title: 'Browse Campaigns',
     description: 'Discover active group buying campaigns for premium clothing at wholesale prices.',
-    icon: '🔍',
+    icon: Search,
   },
   {
     number: '02',
     title: 'Join the Group',
     description: 'Select your size and color, then join the campaign. Your spot is reserved instantly.',
-    icon: '🤝',
+    icon: Users,
   },
   {
     number: '03',
     title: 'Hit the Goal',
     description: 'Once the campaign reaches its target quantity, the bulk order is placed automatically.',
-    icon: '🎯',
+    icon: Target,
   },
   {
     number: '04',
     title: 'Save Big',
     description: 'Everyone in the group gets the item at the wholesale bulk-order price. Shipped to your door.',
-    icon: '📦',
+    icon: PackageCheck,
   },
 ];
 
@@ -62,7 +63,9 @@ export default function HowItWorks() {
         >
           {steps.map((step) => (
             <motion.div key={step.number} className={styles.card} variants={itemVariants}>
-              <div className={styles.iconWrap}>{step.icon}</div>
+              <div className={styles.iconWrap}>
+                <step.icon size={26} color="var(--accent)" strokeWidth={2.2} />
+              </div>
               <span className={styles.number}>{step.number}</span>
               <h3 className={styles.stepTitle}>{step.title}</h3>
               <p className={styles.stepDesc}>{step.description}</p>

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
 import { useTheme } from '@/components/ThemeProvider/ThemeProvider';
+import { Sun, Moon } from 'lucide-react';
 import styles from './Navbar.module.css';
 
 const navLinks = [
@@ -73,7 +74,7 @@ export default function Navbar() {
             aria-label="Toggle theme"
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
           {!loading && (
@@ -163,7 +164,15 @@ export default function Navbar() {
             <div className={styles.mobileDivider} />
 
             <button onClick={toggleTheme} className={styles.mobileTheme}>
-              {theme === 'dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}
+              {theme === 'dark' ? (
+                <>
+                  <Sun size={18} /> Switch to Light Mode
+                </>
+              ) : (
+                <>
+                  <Moon size={18} /> Switch to Dark Mode
+                </>
+              )}
             </button>
           </motion.div>
         )}
