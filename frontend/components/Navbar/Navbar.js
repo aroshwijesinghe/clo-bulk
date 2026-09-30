@@ -125,30 +125,45 @@ export default function Navbar() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={styles.mobileLink}>
-                {link.label}
-              </Link>
-            ))}
+            <div className={styles.mobileNavGroup}>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`${styles.mobileLink} ${pathname === link.href ? styles.active : ''}`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
             <div className={styles.mobileDivider} />
+
             {user ? (
-              <>
+              <div className={styles.mobileNavGroup}>
                 <Link href="/profile" className={styles.mobileLink}>My Profile</Link>
                 <Link href="/orders" className={styles.mobileLink}>My Orders</Link>
                 <Link href="/settings" className={styles.mobileLink}>Settings</Link>
-                {isAdmin && <Link href="/admin" className={styles.mobileLink} style={{ color: 'var(--accent)' }}>Admin Dashboard</Link>}
+                {isAdmin && (
+                  <Link href="/admin" className={styles.mobileLink} style={{ color: 'var(--accent)' }}>
+                    Admin Dashboard
+                  </Link>
+                )}
                 <button onClick={signOut} className={styles.mobileSignOut}>Sign Out</button>
-              </>
+              </div>
             ) : (
-              <>
-                <Link href="/auth" className={styles.mobileLink}>Sign In</Link>
-                <Link href="/auth?mode=signup" className={`${styles.mobileLink} ${styles.mobileAccent}`}>
-                  Create Account
+              <div className={styles.mobileAuthRow}>
+                <Link href="/auth" className={styles.mobileSignInBtn}>Sign In</Link>
+                <Link href="/auth?mode=signup" className={styles.mobileSignUpBtn}>
+                  Get Started
                 </Link>
-              </>
+              </div>
             )}
+
+            <div className={styles.mobileDivider} />
+
             <button onClick={toggleTheme} className={styles.mobileTheme}>
-              {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
+              {theme === 'dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}
             </button>
           </motion.div>
         )}
