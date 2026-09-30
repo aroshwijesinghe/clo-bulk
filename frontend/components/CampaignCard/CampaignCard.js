@@ -126,7 +126,10 @@ export default function CampaignCard({ campaign, onClick }) {
 
         <motion.button
           className={`${styles.joinBtn} ${isFull ? styles.joinFull : ''}`}
-          style={!isFull ? { background: accentColor === 'var(--accent)' ? 'var(--accent)' : accentColor } : {}}
+          style={!isFull ? { 
+            background: accentColor === 'var(--accent)' ? 'var(--accent)' : accentColor,
+            color: '#ffffff',
+          } : {}}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={(e) => { e.stopPropagation(); onClick?.(); }}
