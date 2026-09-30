@@ -448,33 +448,6 @@ function AuthForm() {
                     +
                   </button>
                 </div>
-
-                <div className={styles.social}>
-                  <button
-                    type="button"
-                    onClick={handleGoogle}
-                    title="Sign in with Google"
-                    aria-label="Google"
-                  >
-                    G
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    title="Facebook"
-                    aria-label="Facebook"
-                  >
-                    f
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    title="LinkedIn"
-                    aria-label="LinkedIn"
-                  >
-                    in
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -596,33 +569,6 @@ function AuthForm() {
                     title="Login"
                   >
                     ←
-                  </button>
-                </div>
-
-                <div className={styles.social}>
-                  <button
-                    type="button"
-                    onClick={handleGoogle}
-                    title="Sign up with Google"
-                    aria-label="Google"
-                  >
-                    G
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    title="Facebook"
-                    aria-label="Facebook"
-                  >
-                    f
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    title="LinkedIn"
-                    aria-label="LinkedIn"
-                  >
-                    in
                   </button>
                 </div>
               </div>
