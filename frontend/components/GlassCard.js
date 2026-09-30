@@ -32,8 +32,8 @@ export default function GlassCard({ children, className = "", tilt = false, floa
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    const rotateX = ((y - centerY) / centerY) * -15;
-    const rotateY = ((x - centerX) / centerX) * 15;
+    const rotateX = ((y - centerY) / centerY) * -12;
+    const rotateY = ((x - centerX) / centerX) * 12;
 
     gsap.to(cardRef.current, {
       rotateX,
@@ -57,7 +57,7 @@ export default function GlassCard({ children, className = "", tilt = false, floa
   return (
     <div
       ref={cardRef}
-      className={`relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-colors duration-300 ${hovered ? 'bg-white/10 border-white/20' : ''} ${className}`}
+      className={`relative overflow-hidden rounded-3xl bg-[var(--surface)] shadow-[var(--neu-shadow-raised)] transition-all duration-300 ${hovered ? 'shadow-[var(--neu-shadow-raised-lg)]' : ''} ${className}`}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={handleMouseLeave}
@@ -66,12 +66,12 @@ export default function GlassCard({ children, className = "", tilt = false, floa
         willChange: "transform",
       }}
     >
-      {/* Glossy reflection overlay */}
+      {/* Soft electric sheen on hover */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-500 bg-gradient-to-tr from-transparent via-white/10 to-transparent" 
+        className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-500 bg-gradient-to-tr from-transparent via-cyan-400/5 to-transparent" 
         style={{ opacity: hovered ? 1 : 0 }} 
       />
-      <div className="relative z-10" style={{ transform: "translateZ(30px)" }}>
+      <div className="relative z-10" style={{ transform: "translateZ(25px)" }}>
         {children}
       </div>
     </div>

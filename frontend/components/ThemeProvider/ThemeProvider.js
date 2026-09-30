@@ -4,10 +4,10 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext(null);
 
 export default function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
-    const saved = localStorage.getItem('bt-theme') || 'dark';
+    const saved = localStorage.getItem('bt-theme') || 'light';
     setTheme(saved);
     document.documentElement.setAttribute('data-theme', saved);
   }, []);

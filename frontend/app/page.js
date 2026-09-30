@@ -68,7 +68,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <GlassCard className="mt-12 p-6 max-w-3xl mx-auto backdrop-blur-md bg-white/5 border-white/10" tilt float={true}>
+            <GlassCard className="mt-12 p-8 max-w-3xl mx-auto" tilt float={true}>
               <div className={styles.heroStats}>
                 <div className={styles.heroStat}>
                   <span className={styles.heroStatNum}>{campaigns.length > 0 ? `${campaigns.length}+` : '—'}</span>

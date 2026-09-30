@@ -15,39 +15,39 @@ export default function AdminDashboard() {
 
   if (loading || !isAdmin) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <p>Loading...</p>
+      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'var(--bg)' }}>
+        <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Loading...</p>
       </div>
     );
   }
 
   return (
-    <main style={{ minHeight: '100vh', paddingTop: '100px', paddingBottom: '100px', paddingLeft: '20px', paddingRight: '20px' }}>
+    <main style={{ minHeight: '100vh', paddingTop: '110px', paddingBottom: '100px', paddingLeft: '20px', paddingRight: '20px', background: 'var(--bg)' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.8rem', color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>
           Admin Dashboard
         </h1>
-        <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-          Welcome, Admin. This is a protected view.
+        <p style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', marginBottom: '2.5rem' }}>
+          Welcome, Admin. System overview and management controls.
         </p>
         
-        <div style={{ padding: '2rem', background: 'var(--bg)', borderRadius: '12px', border: '1px solid var(--accent)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--text-primary)' }}>System Overview</h2>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            This is a placeholder for admin controls like campaign management, user moderation, order tracking, and system settings.
+        <div style={{ padding: '2.5rem', background: 'var(--surface)', borderRadius: '30px', boxShadow: 'var(--neu-shadow-raised)' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '0.8rem', color: 'var(--text-primary)' }}>System Overview</h2>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.92rem' }}>
+            Administrative controls for campaign moderation, user authentication verification, order auditing, and platform settings.
           </p>
-          <div style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-             <div style={{ padding: '1rem', border: '1px solid rgba(124, 58, 237, 0.2)', borderRadius: '8px', textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent)' }}>---</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Total Campaigns</div>
+          <div style={{ marginTop: '2.2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+             <div style={{ padding: '1.8rem', background: 'var(--surface)', boxShadow: 'var(--neu-shadow-inset)', borderRadius: '20px', textAlign: 'center' }}>
+                <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '4px' }}>---</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Total Campaigns</div>
              </div>
-             <div style={{ padding: '1rem', border: '1px solid rgba(124, 58, 237, 0.2)', borderRadius: '8px', textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent)' }}>---</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Active Orders</div>
+             <div style={{ padding: '1.8rem', background: 'var(--surface)', boxShadow: 'var(--neu-shadow-inset)', borderRadius: '20px', textAlign: 'center' }}>
+                <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '4px' }}>---</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Active Orders</div>
              </div>
-             <div style={{ padding: '1rem', border: '1px solid rgba(124, 58, 237, 0.2)', borderRadius: '8px', textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent)' }}>---</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Total Users</div>
+             <div style={{ padding: '1.8rem', background: 'var(--surface)', boxShadow: 'var(--neu-shadow-inset)', borderRadius: '20px', textAlign: 'center' }}>
+                <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '4px' }}>---</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Total Users</div>
              </div>
           </div>
         </div>
