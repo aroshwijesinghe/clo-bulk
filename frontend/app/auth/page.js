@@ -2,7 +2,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import styles from './auth.module.css';
@@ -12,270 +11,559 @@ function AuthForm() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
 
-  const [mode, setMode] = useState(searchParams.get('mode') === 'signup' ? 'signup' : 'login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Mode: 'card' (login/signup via 3D flip) or 'forgot' / 'reset' / 'verify'
+  const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
+  const [isFlipped, setIsFlipped] = useState(initialMode === 'signup');
+  const [specialMode, setSpecialMode] = useState(null); // 'forgot', 'reset', 'verify'
+
+  // Form states
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+
   const [otpCode, setOtpCode] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) router.replace('/campaigns');
   }, [user, router]);
 
-  const handleAuth = async (e) => {
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const flipCard = () => {
+    setError('');
+    setMessage('');
+    setIsFlipped(!isFlipped);
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        
-        // Log the login to LoginHistory table
-        try {
-          await supabase.from('LoginHistory').insert([{ email, login_time: new Date().toISOString() }]);
-        } catch (err) {
-          console.warn('Could not save login history. Table might not exist.', err);
-        }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+      if (error) throw error;
 
-        router.push('/campaigns');
-      } else if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: displayName } },
-        });
-        if (error) throw error;
-        setMessage('Code sent! Please check your email and enter the 6-digit code below.');
-        setMode('verify');
-      } else if (mode === 'verify') {
-        const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'signup' });
-        if (error) throw error;
-        
-        try {
-          await supabase.from('LoginHistory').insert([{ email, login_time: new Date().toISOString() }]);
-        } catch (err) {
-          console.warn('Could not save login history.', err);
-        }
-
-        router.push('/campaigns');
+      try {
+        await supabase.from('LoginHistory').insert([{ email: loginEmail, login_time: new Date().toISOString() }]);
+      } catch (err) {
+        console.warn('Could not save login history.', err);
       }
+
+      setMessage('✓ Logged in successfully!');
+      setTimeout(() => router.push('/campaigns'), 600);
     } catch (err) {
-      let msg = 'Something went wrong';
-      if (err instanceof Error) msg = err.message;
-      else if (err?.message) msg = err.message;
-      else if (err?.error_description) msg = err.error_description;
-      else if (typeof err === 'string') msg = err;
-      else msg = JSON.stringify(err);
-      
-      setError(msg);
+      setError(err?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    if (signupPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (signupPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: signupEmail,
+        password: signupPassword,
+        options: { data: { full_name: signupName } },
+      });
+      if (error) throw error;
+
+      if (data?.session) {
+        // Logged in immediately
+        router.push('/campaigns');
+      } else {
+        // Verification email sent
+        setMessage('Verification code sent to your email!');
+        setSpecialMode('verify');
+      }
+    } catch (err) {
+      setError(err?.message || 'Failed to create account.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    const targetEmail = isFlipped ? signupEmail : loginEmail;
+
+    try {
+      const type = specialMode === 'reset' ? 'recovery' : 'signup';
+      const { error } = await supabase.auth.verifyOtp({
+        email: targetEmail,
+        token: otpCode,
+        type,
+      });
+      if (error) throw error;
+
+      if (specialMode === 'reset') {
+        const { error: updateError } = await supabase.auth.updateUser({ password: loginPassword || signupPassword });
+        if (updateError) throw updateError;
+        setMessage('Password updated successfully! Redirecting...');
+        setTimeout(() => router.push('/campaigns'), 1200);
+      } else {
+        try {
+          await supabase.from('LoginHistory').insert([{ email: targetEmail, login_time: new Date().toISOString() }]);
+        } catch (err) {
+          console.warn('Could not save login history.', err);
+        }
+        setMessage('Account verified! Redirecting...');
+        setTimeout(() => router.push('/campaigns'), 800);
+      }
+    } catch (err) {
+      setError(err?.message || 'Invalid or expired verification code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!loginEmail) {
+      setError('Please enter your email address first.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(loginEmail);
+      if (error) throw error;
+      setMessage('Password reset code sent to your email.');
+      setSpecialMode('reset');
+    } catch (err) {
+      setError(err?.message || 'Could not send reset code.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (resendCooldown > 0) return;
+    const targetEmail = isFlipped ? signupEmail : loginEmail;
+    if (!targetEmail) return;
+
+    setLoading(true);
+    setError('');
+    try {
+      const { error } = await supabase.auth.resend({
+        type: specialMode === 'reset' ? 'recovery' : 'signup',
+        email: targetEmail,
+      });
+      if (error) throw error;
+      setMessage('A new code has been sent.');
+      setResendCooldown(60);
+    } catch (err) {
+      setError(err?.message || 'Failed to resend code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider) => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/campaigns` : undefined,
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err?.message || `Failed to sign in with ${provider}`);
+    }
+  };
+
   return (
     <div className={styles.page}>
-      {/* Background blobs */}
-      <div className={styles.blob1} aria-hidden="true" />
-      <div className={styles.blob2} aria-hidden="true" />
+      {/* Decorative floating neumorphic background circles */}
+      <div className={`${styles.bgCircle} ${styles.bg1}`} aria-hidden="true" />
+      <div className={`${styles.bgCircle} ${styles.bg2}`} aria-hidden="true" />
+      <div className={`${styles.bgCircle} ${styles.bg3}`} aria-hidden="true" />
+      <div className={`${styles.bgCircle} ${styles.bg4}`} aria-hidden="true" />
 
-      <motion.div
-        className={styles.card}
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {/* Header */}
-        <div className={styles.header}>
-          <Link href="/" className={styles.brand}>BulkThreads</Link>
-          <h1 className={styles.title}>
-            {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create account' : 'Verify Email'}
-          </h1>
-          <p className={styles.subtitle}>
-            {mode === 'login'
-              ? 'Sign in to access bulk order campaigns'
-              : mode === 'signup'
-              ? 'Join thousands getting wholesale prices together'
-              : `Enter the code sent to ${email}`}
-          </p>
-        </div>
+      <div className={styles.authWrapper}>
+        {/* Special Mode Overlay (Verify OTP or Reset Password) */}
+        {specialMode ? (
+          <div className={`${styles.formPanel}`} style={{ position: 'relative', width: '100%', minHeight: '520px' }}>
+            <div className={styles.logo}>
+              {specialMode === 'verify' ? '✉️' : '🔑'}
+            </div>
+            <h1 className={styles.title}>
+              {specialMode === 'verify' ? 'Verify Email' : 'Reset Password'}
+            </h1>
+            <p className={styles.subtitle}>
+              {specialMode === 'verify'
+                ? `Enter the 6-digit code sent to ${isFlipped ? signupEmail : loginEmail}`
+                : 'Enter the code and set your new password'}
+            </p>
 
-        {/* Mode toggle */}
-        {mode !== 'verify' && (
-          <div className={styles.modeToggle}>
-            <button
-              className={`${styles.modeBtn} ${mode === 'login' ? styles.modeActive : ''}`}
-              onClick={() => { setMode('login'); setError(''); setMessage(''); }}
-            >Sign In</button>
-            <button
-              className={`${styles.modeBtn} ${mode === 'signup' ? styles.modeActive : ''}`}
-              onClick={() => { setMode('signup'); setError(''); setMessage(''); }}
-            >Create Account</button>
-          </div>
-        )}
+            {error && <div className={styles.errorMsg}>{error}</div>}
+            {message && <div className={styles.successMsg}>{message}</div>}
 
-        {/* Form */}
-        <form onSubmit={handleAuth} className={styles.form} noValidate>
-          <AnimatePresence mode="wait">
-            {mode === 'verify' && (
-              <motion.div
-                key="otpCode"
-                className={styles.field}
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <label htmlFor="otpCode" className={styles.label}>Verification Code</label>
+            <form onSubmit={handleVerifyOtp} className={styles.form}>
+              <div className={styles.inputGroup}>
+                <div className={styles.electricGlow} />
+                <div className={styles.electricBorder} />
                 <input
-                  id="otpCode"
                   type="text"
-                  className={styles.input}
-                  placeholder="123456"
+                  id="otpCode"
+                  placeholder=" "
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  required={mode === 'verify'}
                   autoComplete="one-time-code"
-                  autoFocus
-                />
-              </motion.div>
-            )}
-
-            {mode === 'signup' && (
-              <motion.div
-                key="displayName"
-                className={styles.field}
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <label htmlFor="displayName" className={styles.label}>Full Name</label>
-                <input
-                  id="displayName"
-                  type="text"
-                  className={styles.input}
-                  placeholder="Your name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  required={mode === 'signup'}
-                  autoComplete="name"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {mode !== 'verify' && (
-            <div className={styles.field}>
-              <label htmlFor="email" className={styles.label}>Email Address</label>
-              <input
-                id="email"
-                type="email"
-                className={styles.input}
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                autoFocus
-              />
-            </div>
-          )}
-
-          {mode !== 'verify' && (
-            <div className={styles.field}>
-              <div className={styles.labelRow}>
-                <label htmlFor="password" className={styles.label}>Password</label>
-                {mode === 'login' && (
-                  <button type="button" className={styles.forgotLink} onClick={async () => {
-                    if (!email) { setError('Enter your email first'); return; }
-                    await supabase.auth.resetPasswordForEmail(email);
-                    setMessage('Password reset email sent!');
-                  }}>
-                    Forgot password?
-                  </button>
-                )}
-              </div>
-              <div className={styles.passwordWrap}>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  className={styles.input}
-                  placeholder={mode === 'signup' ? 'Minimum 6 characters' : 'Your password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 />
+                <label htmlFor="otpCode">6-Digit Code</label>
+              </div>
+
+              {specialMode === 'reset' && (
+                <div className={styles.inputGroup}>
+                  <div className={styles.electricGlow} />
+                  <div className={styles.electricBorder} />
+                  <input
+                    type={showLoginPassword ? 'text' : 'password'}
+                    id="newResetPassword"
+                    placeholder=" "
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="newResetPassword">New Password</label>
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showLoginPassword ? '🙈' : '👁'}
+                  </button>
+                </div>
+              )}
+
+              <div className={styles.options}>
                 <button
                   type="button"
-                  className={styles.eyeBtn}
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label="Toggle password visibility"
+                  className={styles.forgotBtn}
+                  onClick={handleResendCode}
+                  disabled={resendCooldown > 0}
                 >
-                  {showPassword ? '🙈' : '👁️'}
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
+                </button>
+                <button
+                  type="button"
+                  className={styles.forgotBtn}
+                  onClick={() => { setSpecialMode(null); setError(''); setMessage(''); }}
+                >
+                  Back to Sign In
+                </button>
+              </div>
+
+              <button type="submit" className={styles.mainBtn} disabled={loading}>
+                {loading ? <span className={styles.spinner} /> : specialMode === 'verify' ? 'VERIFY & CONTINUE' : 'UPDATE PASSWORD'}
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div className={`${styles.authCard} ${isFlipped ? styles.flipped : ''}`} id="authCard">
+            {/* ─── LOGIN PANEL (Front) ─── */}
+            <div className={`${styles.formPanel} ${styles.loginPanel}`}>
+              <div className={styles.logo} title="BulkThreads Security">
+                🔐
+              </div>
+              <h1 className={styles.title}>Welcome</h1>
+              <p className={styles.subtitle}>Login to continue your journey</p>
+
+              {error && !isFlipped && <div className={styles.errorMsg}>{error}</div>}
+              {message && !isFlipped && <div className={styles.successMsg}>{message}</div>}
+
+              <form onSubmit={handleLogin} className={styles.form}>
+                {/* EMAIL */}
+                <div className={styles.inputGroup}>
+                  <div className={styles.electricGlow} />
+                  <div className={styles.electricBorder} />
+                  <input
+                    type="email"
+                    id="loginEmail"
+                    placeholder=" "
+                    autoComplete="email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="loginEmail">Email Address</label>
+                </div>
+
+                {/* PASSWORD */}
+                <div className={styles.inputGroup}>
+                  <div className={styles.electricGlow} />
+                  <div className={styles.electricBorder} />
+                  <input
+                    type={showLoginPassword ? 'text' : 'password'}
+                    id="loginPassword"
+                    placeholder=" "
+                    autoComplete="current-password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="loginPassword">Password</label>
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showLoginPassword ? '🙈' : '👁'}
+                  </button>
+                </div>
+
+                <div className={styles.options}>
+                  <label className={styles.checkbox}>
+                    <input type="checkbox" defaultChecked />
+                    Remember me
+                  </label>
+                  <button
+                    type="button"
+                    className={styles.forgotBtn}
+                    onClick={() => {
+                      if (!loginEmail) {
+                        setError('Please enter your email above to reset password.');
+                        return;
+                      }
+                      handleForgotPassword({ preventDefault: () => {} });
+                    }}
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+
+                <button type="submit" className={styles.mainBtn} disabled={loading}>
+                  {loading ? <span className={styles.spinner} /> : 'LOGIN'}
+                </button>
+              </form>
+
+              <div className={styles.switchArea}>
+                <span>Don&apos;t have an account?</span>
+                <button
+                  type="button"
+                  className={styles.switchCircle}
+                  onClick={flipCard}
+                  aria-label="Switch to Create Account"
+                  title="Create Account"
+                >
+                  +
+                </button>
+              </div>
+
+              <div className={styles.social}>
+                <button
+                  type="button"
+                  onClick={() => handleSocialLogin('google')}
+                  title="Sign in with Google"
+                  aria-label="Google"
+                >
+                  G
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSocialLogin('facebook')}
+                  title="Sign in with Facebook"
+                  aria-label="Facebook"
+                >
+                  f
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSocialLogin('linkedin')}
+                  title="Sign in with LinkedIn"
+                  aria-label="LinkedIn"
+                >
+                  in
                 </button>
               </div>
             </div>
-          )}
 
-          {/* Messages */}
-          <AnimatePresence>
-            {error && (
-              <motion.p className={styles.error}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}>
-                {error}
-              </motion.p>
-            )}
-            {message && (
-              <motion.p className={styles.successMsg}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}>
-                {message}
-              </motion.p>
-            )}
-          </AnimatePresence>
+            {/* ─── SIGNUP PANEL (Back - 180deg) ─── */}
+            <div className={`${styles.formPanel} ${styles.signupPanel}`}>
+              <div className={styles.logo} title="Create BulkThreads Account">
+                ✨
+              </div>
+              <h1 className={styles.title}>Create Account</h1>
+              <p className={styles.subtitle}>Start your journey with us</p>
 
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? (
-              <span className={styles.spinner} />
-            ) : (
-              mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Verify & Login'
-            )}
-          </button>
-        </form>
+              {error && isFlipped && <div className={styles.errorMsg}>{error}</div>}
+              {message && isFlipped && <div className={styles.successMsg}>{message}</div>}
 
-        {mode !== 'verify' && (
-          <p className={styles.footer}>
-            {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-            <button
-              className={styles.switchLink}
-              onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setMessage(''); }}
-            >
-              {mode === 'login' ? 'Create one' : 'Sign in'}
-            </button>
-          </p>
+              <form onSubmit={handleSignup} className={styles.form}>
+                {/* NAME */}
+                <div className={styles.inputGroup}>
+                  <div className={styles.electricGlow} />
+                  <div className={styles.electricBorder} />
+                  <input
+                    type="text"
+                    id="signupName"
+                    placeholder=" "
+                    autoComplete="name"
+                    value={signupName}
+                    onChange={(e) => setSignupName(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="signupName">Full Name</label>
+                </div>
+
+                {/* EMAIL */}
+                <div className={styles.inputGroup}>
+                  <div className={styles.electricGlow} />
+                  <div className={styles.electricBorder} />
+                  <input
+                    type="email"
+                    id="signupEmail"
+                    placeholder=" "
+                    autoComplete="email"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="signupEmail">Email Address</label>
+                </div>
+
+                {/* PASSWORD */}
+                <div className={styles.inputGroup}>
+                  <div className={styles.electricGlow} />
+                  <div className={styles.electricBorder} />
+                  <input
+                    type={showSignupPassword ? 'text' : 'password'}
+                    id="signupPassword"
+                    placeholder=" "
+                    autoComplete="new-password"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="signupPassword">Password</label>
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowSignupPassword(!showSignupPassword)}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showSignupPassword ? '🙈' : '👁'}
+                  </button>
+                </div>
+
+                {/* CONFIRM PASSWORD */}
+                <div className={styles.inputGroup}>
+                  <div className={styles.electricGlow} />
+                  <div className={styles.electricBorder} />
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder=" "
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="confirmPassword">Confirm Password</label>
+                </div>
+
+                <button type="submit" className={styles.mainBtn} disabled={loading}>
+                  {loading ? <span className={styles.spinner} /> : 'CREATE ACCOUNT'}
+                </button>
+              </form>
+
+              <div className={styles.switchArea}>
+                <span>Already have an account?</span>
+                <button
+                  type="button"
+                  className={styles.switchCircle}
+                  onClick={flipCard}
+                  aria-label="Switch to Login"
+                  title="Login"
+                >
+                  ←
+                </button>
+              </div>
+
+              <div className={styles.social}>
+                <button
+                  type="button"
+                  onClick={() => handleSocialLogin('google')}
+                  title="Sign up with Google"
+                  aria-label="Google"
+                >
+                  G
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSocialLogin('facebook')}
+                  title="Sign up with Facebook"
+                  aria-label="Facebook"
+                >
+                  f
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSocialLogin('linkedin')}
+                  title="Sign up with LinkedIn"
+                  aria-label="LinkedIn"
+                >
+                  in
+                </button>
+              </div>
+            </div>
+          </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--bg)' }} />}>
       <AuthForm />
     </Suspense>
   );

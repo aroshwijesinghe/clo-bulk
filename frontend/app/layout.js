@@ -1,20 +1,20 @@
 import './globals.css';
-import { Outfit } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/lib/AuthContext';
 import Navbar from '@/components/Navbar/Navbar';
 import Footer from '@/components/Footer/Footer';
 import ThemeProvider from '@/components/ThemeProvider/ThemeProvider';
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-outfit',
-  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata = {
   title: 'BulkThreads | Group Buying for Premium Clothing',
   description:
-    'Join bulk order campaigns for premium clothing. Unlock wholesale prices together.',
+    'Join bulk order campaigns for premium clothing. Unlock wholesale prices together with neumorphic group buying.',
   keywords: 'bulk order, group buying, wholesale clothing, fashion deals',
   openGraph: {
     title: 'BulkThreads | Group Buying for Premium Clothing',
@@ -25,7 +25,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={outfit.variable} suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         {/* ThemeScript prevents flash of wrong theme on load */}
         <script
@@ -33,7 +33,7 @@ export default function RootLayout({ children }) {
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('bt-theme') || 'dark';
+                  var theme = localStorage.getItem('bt-theme') || 'light';
                   document.documentElement.setAttribute('data-theme', theme);
                 } catch(e) {}
               })();
