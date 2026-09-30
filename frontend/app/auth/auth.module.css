@@ -8,10 +8,10 @@
   background: var(--bg);
   position: relative;
   overflow: hidden;
-  padding: 5rem 1rem 3rem;
+  padding: 6rem 1rem 4rem;
 }
 
-/* FLOATING BACKGROUND CIRCLES */
+/* FLOATING EMBOSSED BACKGROUND CIRCLES */
 .bgCircle {
   position: fixed;
   border-radius: 50%;
@@ -25,7 +25,7 @@
 .bg1 {
   width: 220px;
   height: 220px;
-  top: 8%;
+  top: 7%;
   left: 6%;
 }
 
@@ -38,17 +38,17 @@
 }
 
 .bg3 {
-  width: 70px;
-  height: 70px;
+  width: 75px;
+  height: 75px;
   right: 18%;
   top: 18%;
   animation-delay: 3s;
 }
 
 .bg4 {
-  width: 90px;
-  height: 90px;
-  left: 20%;
+  width: 95px;
+  height: 95px;
+  left: 18%;
   bottom: 12%;
   animation-delay: 4.2s;
 }
@@ -71,11 +71,11 @@
   position: relative;
 }
 
-/* 3D FLIPPABLE CARD */
+/* 3D FLIPPABLE EMBOSSED CARD */
 .authCard {
   position: relative;
   width: 100%;
-  min-height: 650px;
+  min-height: 740px;
   transform-style: preserve-3d;
   transition: transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
@@ -88,7 +88,7 @@
 .formPanel {
   position: absolute;
   inset: 0;
-  padding: 40px 36px;
+  padding: 36px 34px;
   border-radius: 35px;
   background: var(--surface);
   box-shadow: var(--neu-shadow-raised-lg);
@@ -100,13 +100,18 @@
 
 .signupPanel {
   transform: rotateY(180deg);
+  min-height: 820px;
+}
+
+.authCard:has(.signupPanel) {
+  min-height: 820px;
 }
 
 /* LOGO */
 .logo {
-  width: 82px;
-  height: 82px;
-  margin: 0 auto 16px;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 14px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -129,17 +134,90 @@
 .title {
   text-align: center;
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 6px;
+  margin-bottom: 5px;
+  letter-spacing: -0.5px;
 }
 
 .subtitle {
   text-align: center;
   color: var(--text-secondary);
   font-size: 13px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   line-height: 1.5;
+}
+
+/* EMBOSSED GOOGLE AUTHENTICATION BUTTON */
+.googleBtn {
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 17px;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--neu-shadow-raised-sm);
+  transition: all 0.3s ease;
+  margin-bottom: 18px;
+  position: relative;
+  isolation: isolate;
+}
+
+.googleBtn svg {
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.googleBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-shadow-glow), var(--neu-shadow-raised-sm);
+  color: var(--accent);
+}
+
+.googleBtn:hover:not(:disabled) svg {
+  transform: scale(1.1);
+}
+
+.googleBtn:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: var(--neu-shadow-inset);
+}
+
+.googleBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* EMBOSSED DIVIDER */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 2px;
+  background: var(--surface);
+  box-shadow: var(--neu-shadow-inset);
+  border-radius: 2px;
+}
+
+.dividerText {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 /* FORM */
@@ -149,7 +227,7 @@
   width: 100%;
 }
 
-/* INPUT GROUP */
+/* INPUT GROUP WITH ELECTRIC BORDER & GLOW */
 .inputGroup {
   position: relative;
   width: 100%;
@@ -157,7 +235,7 @@
   margin-bottom: 18px;
 }
 
-/* ELECTRIC BORDER */
+/* ROTATING ELECTRIC BORDER ANIMATION */
 .electricBorder {
   position: absolute;
   inset: -2px;
@@ -197,6 +275,7 @@
   background: var(--surface);
 }
 
+/* ELECTRIC BLUR HALO GLOW */
 .electricGlow {
   position: absolute;
   inset: -4px;
@@ -235,7 +314,7 @@
   }
 }
 
-/* INPUT FIELD */
+/* DEBOSSED / INSET INPUT FIELD */
 .inputGroup input {
   position: absolute;
   inset: 2px;
@@ -279,13 +358,13 @@
   background: var(--surface);
   color: var(--accent);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 14px;
   white-space: nowrap;
   box-shadow: var(--neu-shadow-raised-xs);
 }
 
-/* PASSWORD TOGGLE */
+/* PASSWORD TOGGLE EYE */
 .passwordToggle {
   position: absolute;
   right: 14px;
@@ -306,7 +385,7 @@
 
 .passwordToggle:hover {
   color: var(--accent);
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 /* OPTIONS (REMEMBER ME + FORGOT) */
@@ -314,7 +393,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 2px 4px 20px;
+  margin: 2px 4px 18px;
   color: var(--text-secondary);
   font-size: 12px;
 }
@@ -337,7 +416,7 @@
   background: none;
   border: none;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   padding: 0;
   transition: opacity 0.2s;
@@ -347,7 +426,7 @@
   text-decoration: underline;
 }
 
-/* MAIN BUTTON */
+/* MAIN EMBOSSED BUTTON WITH ELECTRIC HOVER REVEAL */
 .mainBtn {
   position: relative;
   isolation: isolate;
@@ -387,7 +466,7 @@
   z-index: -1;
 }
 
-.mainBtn:hover::before {
+.mainBtn:hover:not(:disabled)::before {
   transform: translateY(0);
   animation: buttonMove 1.5s linear infinite;
 }
@@ -401,13 +480,13 @@
   }
 }
 
-.mainBtn:hover {
+.mainBtn:hover:not(:disabled) {
   color: #fff;
   transform: translateY(-3px);
   box-shadow: var(--neu-shadow-glow);
 }
 
-.mainBtn:active {
+.mainBtn:active:not(:disabled) {
   transform: scale(0.97);
 }
 
@@ -423,7 +502,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 22px;
+  margin-top: 20px;
   font-size: 12px;
   color: var(--text-secondary);
 }
@@ -456,12 +535,12 @@
   transform: scale(0.9);
 }
 
-/* SOCIAL BUTTONS */
+/* SOCIAL CIRCLES */
 .social {
   display: flex;
   justify-content: center;
   gap: 14px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .social button {
@@ -489,7 +568,7 @@
   box-shadow: var(--neu-shadow-glow);
 }
 
-/* FEEDBACK MESSAGES */
+/* MESSAGES */
 .errorMsg {
   font-size: 12px;
   color: var(--danger);
@@ -535,17 +614,20 @@
     width: 95%;
   }
   .formPanel {
-    padding: 30px 22px;
+    padding: 28px 20px;
   }
   .authCard {
-    min-height: 620px;
+    min-height: 720px;
+  }
+  .signupPanel {
+    min-height: 780px;
   }
   .title {
-    font-size: 23px;
+    font-size: 22px;
   }
   .logo {
-    width: 72px;
-    height: 72px;
-    font-size: 28px;
+    width: 68px;
+    height: 68px;
+    font-size: 26px;
   }
 }

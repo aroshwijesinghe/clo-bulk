@@ -284,6 +284,17 @@ img {
   z-index: 5;
 }
 
+.input-group:focus-within .electric-border,
+.inputGroup:focus-within .electricBorder {
+  opacity: 1;
+}
+
+.input-group:focus-within .electric-glow,
+.inputGroup:focus-within .electricGlow {
+  opacity: 0.55;
+  animation: electricRotate 1.1s linear infinite;
+}
+
 @keyframes electricRotate {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
@@ -436,7 +447,7 @@ input[type="number"]:focus,
 input[type="date"]:focus,
 select:focus,
 textarea:focus {
-  box-shadow: var(--neu-shadow-inset-focus), 0 0 0 2px var(--accent-glow);
+  box-shadow: var(--neu-shadow-inset-focus), 0 0 0 2px var(--accent), 0 0 16px rgba(0, 234, 255, 0.45);
 }
 
 .input::placeholder,
