@@ -246,8 +246,6 @@ function AuthForm() {
 
             <form onSubmit={handleVerifyOtp} className={styles.form}>
               <div className={styles.inputGroup}>
-                <div className={styles.electricGlow} />
-                <div className={styles.electricBorder} />
                 <input
                   type="text"
                   id="otpCode"
@@ -262,8 +260,6 @@ function AuthForm() {
 
               {specialMode === 'reset' && (
                 <div className={styles.inputGroup}>
-                  <div className={styles.electricGlow} />
-                  <div className={styles.electricBorder} />
                   <input
                     type={showLoginPassword ? 'text' : 'password'}
                     id="newResetPassword"
@@ -348,8 +344,6 @@ function AuthForm() {
                 <form onSubmit={handleLogin} className={styles.form}>
                   {/* EMAIL */}
                   <div className={styles.inputGroup}>
-                    <div className={styles.electricGlow} />
-                    <div className={styles.electricBorder} />
                     <input
                       type="email"
                       id="loginEmail"
@@ -364,8 +358,6 @@ function AuthForm() {
 
                   {/* PASSWORD */}
                   <div className={styles.inputGroup}>
-                    <div className={styles.electricGlow} />
-                    <div className={styles.electricBorder} />
                     <input
                       type={showLoginPassword ? 'text' : 'password'}
                       id="loginPassword"
@@ -494,8 +486,6 @@ function AuthForm() {
                 <form onSubmit={handleSignup} className={styles.form}>
                   {/* NAME */}
                   <div className={styles.inputGroup}>
-                    <div className={styles.electricGlow} />
-                    <div className={styles.electricBorder} />
                     <input
                       type="text"
                       id="signupName"
@@ -510,8 +500,6 @@ function AuthForm() {
 
                   {/* EMAIL */}
                   <div className={styles.inputGroup}>
-                    <div className={styles.electricGlow} />
-                    <div className={styles.electricBorder} />
                     <input
                       type="email"
                       id="signupEmail"
@@ -526,8 +514,6 @@ function AuthForm() {
 
                   {/* PASSWORD */}
                   <div className={styles.inputGroup}>
-                    <div className={styles.electricGlow} />
-                    <div className={styles.electricBorder} />
                     <input
                       type={showSignupPassword ? 'text' : 'password'}
                       id="signupPassword"
@@ -550,8 +536,6 @@ function AuthForm() {
 
                   {/* CONFIRM PASSWORD */}
                   <div className={styles.inputGroup}>
-                    <div className={styles.electricGlow} />
-                    <div className={styles.electricBorder} />
                     <input
                       type="password"
                       id="confirmPassword"
