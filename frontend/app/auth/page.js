@@ -58,13 +58,41 @@ function AuthForm() {
     setError('');
     setMessage('');
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/campaigns` : undefined;
+      
+      // Request OAuth URL with skipBrowserRedirect to pre-validate provider status
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/campaigns` : undefined,
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
         },
       });
       if (error) throw error;
+
+      if (data?.url) {
+        // Pre-check if the provider endpoint returns 400 (i.e. provider is not enabled in Supabase)
+        try {
+          const testRes = await fetch(data.url, { method: 'GET' });
+          if (!testRes.ok) {
+            const errJson = await testRes.json().catch(() => null);
+            if (errJson?.msg?.includes('provider is not enabled') || errJson?.code === 400) {
+              throw new Error(
+                'Google sign-in is not enabled yet in your Supabase project (lafrwgoojoqijimsixsz). Please enable Google in Supabase Dashboard (Authentication > Providers > Google).'
+              );
+            }
+            throw new Error(errJson?.msg || 'Google authentication failed');
+          }
+        } catch (fetchErr) {
+          if (fetchErr.message && fetchErr.message.includes('not enabled')) {
+            throw fetchErr;
+          }
+          // Note: When Google provider IS enabled, the fetch will hit accounts.google.com and be blocked by CORS redirect, which is expected!
+        }
+
+        // Provider is enabled - proceed with normal redirect
+        window.location.href = data.url;
+      }
     } catch (err) {
       setError(err?.message || 'Failed to authenticate with Google');
       setLoading(false);
