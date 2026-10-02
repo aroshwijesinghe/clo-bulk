@@ -86,7 +86,16 @@ export default function Navbar() {
                   </Link>
                 )}
                 <Link href="/profile" className={styles.avatar} title="Profile">
-                  {userInitial}
+                  {user?.user_metadata?.avatar_url ? (
+                    <img
+                      src={user.user_metadata.avatar_url}
+                      alt={userInitial}
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    userInitial
+                  )}
                 </Link>
                 <button onClick={signOut} className={styles.signOutBtn}>
                   Sign Out

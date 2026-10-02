@@ -34,8 +34,18 @@ function AuthForm() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  // Redirect if already logged in
+  // Redirect if already logged in or incoming OAuth tokens
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash && (hash.includes('access_token=') || hash.includes('id_token='))) {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+        router.replace('/campaigns');
+        return;
+      }
+    }
     if (user) router.replace('/campaigns');
   }, [user, router]);
 
@@ -59,7 +69,8 @@ function AuthForm() {
     setError('');
     setMessage('');
     try {
-      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/campaigns` : undefined;
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const redirectUrl = `${origin}/auth/callback`;
       
       // 1. Preflight check Supabase auth settings to verify Google provider status
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lafrwgoojoqijimsixsz.supabase.co';
@@ -94,6 +105,10 @@ function AuthForm() {
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
+          queryParams: {
+            prompt: 'select_account',
+            access_type: 'offline',
+          },
         },
       });
       if (error) throw error;

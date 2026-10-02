@@ -30,35 +30,95 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Sync profile details (e.g. from Google OAuth metadata)
+  const syncUserProfile = async (currentUser) => {
+    if (!currentUser) return;
+    try {
+      const meta = currentUser.user_metadata || {};
+      const name = meta.full_name || meta.name || currentUser.email?.split('@')[0] || '';
+      const avatar = meta.avatar_url || meta.picture || null;
+
+      const { data: profile } = await supabase
+        .from('Profile')
+        .select('id, displayName, avatarUrl')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (!profile) {
+        await supabase.from('Profile').insert([{
+          id: currentUser.id,
+          displayName: name,
+          avatarUrl: avatar,
+        }]);
+      } else if ((!profile.displayName && name) || (!profile.avatarUrl && avatar)) {
+        await supabase.from('Profile').update({
+          displayName: profile.displayName || name,
+          avatarUrl: profile.avatarUrl || avatar,
+          updatedAt: new Date().toISOString(),
+        }).eq('id', currentUser.id);
+      }
+    } catch {
+      // Non-fatal, profile might already be managed by trigger
+    }
+  };
+
   useEffect(() => {
-    const fetchRole = async (userId) => {
-      if (!userId) {
+    const fetchRole = async (currentUser) => {
+      if (!currentUser) {
         setIsAdmin(false);
         return;
       }
+
+      // Check user metadata first
+      if (
+        currentUser.app_metadata?.role === 'admin' ||
+        currentUser.user_metadata?.role === 'admin'
+      ) {
+        setIsAdmin(true);
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('Profile')
           .select('role')
-          .eq('id', userId)
+          .eq('id', currentUser.id)
           .single();
-        
-        if (!error && data) {
-          setIsAdmin(data.role === 'admin');
+
+        if (!error && data?.role === 'admin') {
+          setIsAdmin(true);
         } else {
           setIsAdmin(false);
         }
-      } catch (err) {
+      } catch {
         setIsAdmin(false);
       }
     };
 
-    // Get current session (reads JWT from localStorage)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRole(session.user.id).finally(() => setLoading(false));
+    // Clean hash token if present in URL
+    const cleanUrlHash = () => {
+      if (
+        typeof window !== 'undefined' &&
+        window.location.hash &&
+        (window.location.hash.includes('access_token=') || window.location.hash.includes('id_token='))
+      ) {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
+    };
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: initSession } }) => {
+      setSession(initSession);
+      const currentUser = initSession?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        syncUserProfile(currentUser);
+        fetchRole(currentUser).finally(() => {
+          cleanUrlHash();
+          setLoading(false);
+        });
       } else {
         setLoading(false);
       }
@@ -66,14 +126,30 @@ export function AuthProvider({ children }) {
 
     // Listen for auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          fetchRole(session.user.id).finally(() => setLoading(false));
+      async (event, currentSession) => {
+        setSession(currentSession);
+        const currentUser = currentSession?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          syncUserProfile(currentUser);
+          await fetchRole(currentUser);
+
+          if (event === 'SIGNED_IN') {
+            try {
+              await supabase.from('LoginHistory').insert([{
+                email: currentUser.email,
+                login_time: new Date().toISOString(),
+              }]);
+            } catch {
+              // Ignore duplicate or non-fatal
+            }
+          }
+          cleanUrlHash();
         } else {
-          setLoading(false);
+          setIsAdmin(false);
         }
+        setLoading(false);
       }
     );
 

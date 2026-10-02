@@ -40,6 +40,7 @@ export default function ProfilePage() {
     setSaving(false);
   }
 
+  const userAvatar = user?.user_metadata?.avatar_url || profile.avatarUrl;
   const initial = (profile.displayName || user?.email || '?')[0].toUpperCase();
 
   if (authLoading || loading) return <div className={styles.loadingPage}><div className="skeleton" style={{ width: 200, height: 200, borderRadius: '50%', margin: '0 auto' }} /></div>;
@@ -50,7 +51,18 @@ export default function ProfilePage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           {/* Profile Header */}
           <div className={styles.heroCard}>
-            <div className={styles.avatarLg}>{initial}</div>
+            <div className={styles.avatarLg}>
+              {userAvatar ? (
+                <img
+                  src={userAvatar}
+                  alt={initial}
+                  style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                initial
+              )}
+            </div>
             <div>
               <h1 className={styles.name}>{profile.displayName || 'Your Profile'}</h1>
               <p className={styles.email}>{user?.email}</p>

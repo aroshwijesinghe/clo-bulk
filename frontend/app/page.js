@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -14,9 +15,23 @@ import styles from './page.module.css';
 import GlassCard from '@/components/GlassCard';
 
 export default function HomePage() {
+  const router = useRouter();
   const [campaigns, setCampaigns] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // If redirected to homepage with OAuth tokens in hash, redirect to campaigns
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash && (hash.includes('access_token=') || hash.includes('id_token='))) {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+        router.replace('/campaigns');
+      }
+    }
+  }, [router]);
 
   useEffect(() => {
     supabase.from('Campaign').select('*').eq('status', 'active')
