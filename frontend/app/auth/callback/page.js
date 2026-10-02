@@ -33,8 +33,25 @@ function CallbackContent() {
           return;
         }
 
-        // 2. Wait for Supabase to resolve the session from hash/cookies
+        // 2. Wait for Supabase to resolve the session from hash/cookies or PKCE code
         setStatus('Setting up your account...');
+
+        // Check for PKCE authorization code
+        const code = urlParams.get('code');
+        if (code) {
+          try {
+            const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            if (!exchangeError && data?.session) {
+              if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname);
+              }
+              router.replace('/campaigns');
+              return;
+            }
+          } catch (pkceErr) {
+            console.warn('PKCE exchange error:', pkceErr);
+          }
+        }
 
         // Try getting current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
